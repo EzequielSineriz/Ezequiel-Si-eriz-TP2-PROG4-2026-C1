@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { join } from 'path';
 import { UsuarioModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
+import { PublicacionModule } from './publicaciones/publicacion.module';
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb+srv://ezequielsineriz_db_user:FpAhkyrpO0mddc5h@cluster0.k9mhhz0.mongodb.net/red-social?appName=Cluster0'),
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsuarioModule,
     AuthModule,
+    PublicacionModule
   ],
   controllers: [AppController],
   providers: [AppService],
