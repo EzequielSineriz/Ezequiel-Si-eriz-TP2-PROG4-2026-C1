@@ -3,6 +3,7 @@ import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IPublicacion } from './publicaciones.interface';
 import { AuthService } from '../../auth/services/auth.service';
+import { environment } from '../../../environments/enviroment';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +11,7 @@ import { AuthService } from '../../auth/services/auth.service';
 export class PublicacionesService {
 
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/publicaciones';
+  private apiUrl = environment.apiUrl + '/publicaciones';
   private authService = inject(AuthService);
 
   private obtenerCabeceras(): HttpHeaders {

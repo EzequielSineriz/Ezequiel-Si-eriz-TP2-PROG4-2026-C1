@@ -2,13 +2,14 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IComentario } from '../comentarios/comentarios.interfaces';
+import { environment } from '../../../../environments/enviroment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ComentariosService {
   private http = inject(HttpClient);
-  private apiUrl = 'http://localhost:3000/comentarios';
+  private apiUrl = environment.apiUrl + '/comentarios';
 
   // Helper para las cabeceras seguras (Bearer Token)
   private obtenerCabeceras(): HttpHeaders {
