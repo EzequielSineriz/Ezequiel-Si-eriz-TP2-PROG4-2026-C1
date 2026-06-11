@@ -25,19 +25,19 @@ private fb = inject(FormBuilder);
     {
       inicial: 'A',
       username: 'AFRIADENRICH',
-      email: 'afria@paranormal.com',
-      pass: 'claveEspectro123',
+      email: 'AFRIADENRICH',
+      pass: 'ClaveEspectro123456',
       colorClass: 'border-purple-500 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] shadow-purple-950'
     },
     {
-      inicial: 'R',
-      username: 'RAMIROALFONZO',
-      email: 'ramiro@paranormal.com',
-      pass: 'portalAbierto99',
+      inicial: 'W',
+      username: 'Developer-W',
+      email: 'Willyams',
+      pass: 'Abc123456',
       colorClass: 'border-cyan-500 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)] shadow-cyan-950'
     },
     {
-      inicial: 'N',
+      inicial: 'W',
       username: 'NDIEZ-UTN',
       email: 'ndiez@utn.com',
       pass: 'investigacion2026',

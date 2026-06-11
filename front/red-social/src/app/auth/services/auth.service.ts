@@ -14,11 +14,8 @@ export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
 
-  // Tu URL base del backend NestJS
   private apiUrl = environment.apiUrl;
 
-  // Usamos Angular Signals para exponer el usuario de forma reactiva a toda la app
-  // inyectamos el valor inicial desde localStorage para mantener la sesión al recargar la página
   public usuarioActual = signal<any | null>(null);
   private timerSesion: any;
 
@@ -61,7 +58,6 @@ export class AuthService {
         localStorage.setItem('paranormal_token', response.token);
         localStorage.setItem('paranormal_user', JSON.stringify(response.user));
 
-        // Actualizamos el Signal
         this.usuarioActual.set(response.user);
 
         this.router.navigate(['/home']);
@@ -168,7 +164,7 @@ iniciarContadorMaldito() {
     this.timerSesion = setTimeout(() => {
       console.warn('⚠️ El contador llegó a los 10 segundos. Desplegando advertencia gótica...');
       this.mostrarModalExtensionSesion();
-    }, tiempoEsperaReal);
+    }, tiempoEsperaPrueba);
   }
 
   private mostrarModalExtensionSesion() {
