@@ -14,8 +14,9 @@ async function bootstrap() {
 
   app.enableCors({
     origin: [
-      'http://localhost:4200', // Tu front local
-      'https://red-social-front-swart.vercel.app/' // 👈 La URL que te dé Vercel para tu Front
+      'http://localhost:4200', 
+      'https://red-social-front-swart.vercel.app/',
+      "**"
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
