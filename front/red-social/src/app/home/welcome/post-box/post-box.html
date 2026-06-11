@@ -1,0 +1,53 @@
+<div class="p-4 border-b border-white/10 bg-black/40 backdrop-blur-sm">
+  <form [formGroup]="postForm" (ngSubmit)="enviarPost()" class="flex gap-3">
+    <div class="w-10 h-10 rounded-full bg-emerald-950 border border-emerald-500/30 flex items-center justify-center font-bold text-emerald-400 shrink-0">
+      C
+    </div>
+
+    <div class="w-full space-y-3">
+      <textarea
+        formControlName="contenido"
+        class="w-full bg-transparent border-none text-gray-200 placeholder-gray-500 focus:outline-none resize-none text-sm font-body"
+        placeholder="¿Qué avistamiento paranormal presenciaste hoy...?"
+        rows="3"></textarea>
+
+      @if (imagenPreview) {
+        <div class="relative inline-block rounded-lg overflow-hidden border border-emerald-500/50 max-h-60 asset-preview">
+          <img [src]="imagenPreview" class="max-h-60 object-cover rounded-lg" alt="Preview" />
+          <button
+            type="button"
+            (click)="quitarImagen()"
+            class="absolute top-2 right-2 bg-black/70 hover:bg-red-600 text-white rounded-full p-1.5 transition-colors cursor-pointer text-xs">
+            ✕
+          </button>
+        </div>
+      }
+
+      <div class="flex flex-wrap justify-between items-center border-t border-white/5 pt-2 gap-2">
+        <div class="flex items-center gap-3">
+          <select formControlName="categoria"
+                  class="bg-zinc-900 border border-emerald-500/30 text-emerald-400 text-xs rounded px-2 py-1 focus:outline-none focus:border-emerald-500 font-body">
+            @for (cat of categorias; track cat.id) {
+              <option [value]="cat.id">{{ cat.nombre }}</option>
+            }
+          </select>
+
+          <label class="flex items-center gap-1 text-xs text-gray-400 hover:text-emerald-400 cursor-pointer transition-colors">
+            <input
+              type="file"
+              accept="image/*"
+              class="hidden"
+              (change)="onFileSelected($event)">
+            📷 <span>Adjuntar Evidencia</span>
+          </label>
+        </div>
+
+        <button type="submit"
+                [disabled]="postForm.invalid"
+                class="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-40 text-white font-bold text-xs uppercase tracking-widest px-4 py-2 rounded-full transition-all shadow-[0_0_10px_rgba(16,185,129,0.3)] cursor-pointer">
+          Publicar
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

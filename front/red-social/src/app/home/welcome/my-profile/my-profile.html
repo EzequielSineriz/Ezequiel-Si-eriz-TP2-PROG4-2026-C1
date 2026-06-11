@@ -1,0 +1,123 @@
+@if (currentUser) {
+  <div class="p-6 bg-black/40 backdrop-blur-md space-y-6 min-h-full border-x border-white/5 text-gray-200">
+
+    <div class="space-y-4">
+      <div class="flex items-start justify-between">
+        <div class="flex gap-4 items-center">
+
+          <div class="relative group w-16 h-16 rounded-full border-2 border-emerald-500/30 bg-zinc-900 flex items-center justify-center overflow-hidden">
+            @if (currentUser.avatarUrl || currentUser.avatarUrl) {
+              <img [src]="'http://localhost:3000' + (currentUser.avatarUrl || currentUser.avatarUrl)" class="w-full h-full object-cover" alt="Avatar">
+            } @else {
+              <span class="text-2xl">👁️</span>
+            }
+
+            <label class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+              <input type="file" accept="image/*" class="hidden" (change)="onAvatarSeleccionado($event)">
+              <span class="text-xs" title="Modificar apariencia">✏️</span>
+            </label>
+          </div>
+
+          <div class="space-y-1">
+            <h2 class="text-2xl font-bold tracking-wide text-gray-100">
+              {{ currentUser.nombreUsuario }}
+            </h2>
+            <p class="text-xs text-emerald-400 font-mono">{{ currentUser.email }}</p>
+          </div>
+        </div>
+
+        <span class="text-[9px] uppercase font-black tracking-widest px-2 py-1 rounded bg-purple-950/60 text-purple-400 border border-purple-500/30">
+          {{ currentUser.perfil }}
+        </span>
+      </div>
+
+      <div class="relative group">
+        @if (editandoDescripcion()) {
+          <div class="flex flex-col gap-2 bg-white/5 p-3 rounded border border-emerald-500/30 animate-fadeIn">
+            <textarea
+              [(ngModel)]="descripcionTemporal"
+              rows="2"
+              class="w-full bg-transparent border-none text-sm text-gray-200 font-body focus:outline-none resize-none"></textarea>
+            <div class="flex justify-end gap-2 text-xs">
+              <button (click)="guardarDescripcion()" class="text-emerald-400 hover:text-emerald-300 font-bold bg-transparent border-none cursor-pointer">Guardar</button>
+              <button (click)="editandoDescripcion.set(false)" class="text-gray-500 hover:text-gray-400 bg-transparent border-none cursor-pointer">Cancelar</button>
+            </div>
+          </div>
+        } @else {
+          <p class="text-sm text-gray-300 font-body italic bg-white/5 p-3 rounded border border-white/5 pr-10">
+            "{{ currentUser.descripcion || 'Buscador de las verdades que la logia oculta en las sombras.' }}"
+
+            <button
+              (click)="activarEdicionDescripcion()"
+              class="absolute right-3 top-3 opacity-0 group-hover:opacity-100 text-gray-500 hover:text-emerald-400 transition-all bg-transparent border-none cursor-pointer text-xs"
+              title="Reescribir bitácora personal">
+              ✏️
+            </button>
+          </p>
+        }
+      </div>
+    </div>
+
+    <div class="flex gap-6 text-xs pt-2 border-b border-white/10 pb-4">
+      <div>
+        <span class="font-bold text-gray-100">{{ meGustasTotales() }}</span>
+        <span class="text-gray-500 ml-1">🖤 Me Gustas Totales</span>
+      </div>
+      <div>
+        <span class="font-bold text-gray-100">{{ totalPublicaciones() }}</span>
+        <span class="text-gray-500 ml-1">📜 Publicaciones</span>
+      </div>
+      <div>
+        <span class="font-bold text-gray-100">{{ currentUser.seguidores?.length || 0 }}</span>
+        <span class="text-gray-500 ml-1">👥 Seguidores</span>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <h4 class="text-[10px] uppercase font-black tracking-widest text-emerald-500/80">
+        Investigadores que sigues ({{ currentUser.siguiendo?.length || 0 }})
+      </h4>
+      <div class="flex flex-wrap gap-2">
+        @for (investigador of currentUser.siguiendo; track investigador._id) {
+          <div class="flex items-center gap-1 bg-black/60 border border-white/10 rounded-full px-3 py-1 text-xs text-gray-300 hover:border-emerald-500/40 transition-all cursor-pointer">
+            <span>👤</span> <span>{{ investigador.nombreUsuario || 'Anónimo' }}</span>
+          </div>
+        } @empty {
+          <span class="text-[11px] text-gray-600 italic uppercase tracking-wider">No sigues a ningún miembro de la orden todavía.</span>
+        }
+      </div>
+    </div>
+
+    <div class="space-y-4 pt-4">
+      <h3 class="text-xs uppercase font-black tracking-widest text-emerald-500 border-b border-white/10 pb-2">
+        Tus Últimos Informes Clasificados
+      </h3>
+
+      @if (cargandoBitacora()) {
+        <div class="flex flex-col items-center justify-center py-12 space-y-2">
+          <span class="text-lg animate-spin">🔮</span>
+          <p class="text-[10px] uppercase tracking-widest text-gray-600">Extrayendo expedientes antiguos...</p>
+        </div>
+      } @else {
+        <div class="space-y-4">
+          @for (post of ultimosPosteos(); track post._id) {
+            <app-post-card
+             [post]="{ ...post, autorId: currentUser }"
+            [usuarioActualId]="currentUser._id">
+          </app-post-card>
+          } @empty {
+            <p class="text-center text-xs text-gray-500 py-12 uppercase tracking-widest bg-black/20 rounded border border-dashed border-white/10">
+              Tu bitácora de avistamientos está completamente vacía...
+            </p>
+          }
+        </div>
+      }
+    </div>
+
+  </div>
+} @else {
+  <div class="flex flex-col items-center justify-center min-h-[50vh] space-y-2 text-gray-200">
+    <span class="text-xl animate-spin">👁️</span>
+    <p class="text-xs uppercase tracking-widest text-gray-500">Sincronizando credenciales de la Logia...</p>
+  </div>
+}

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { sign } from "jsonwebtoken";
 import { Model } from "mongoose";
@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
+  
     constructor(@InjectModel(Usuario.name) private UsuarioModel: Model<Usuario>) {
 
     }
@@ -55,7 +56,7 @@ export class AuthService {
     return {
       token,
       user: {
-        _id: usuarioCreado._id,
+        _id: usuarioCreado._id.toString(),
         nombre: usuarioCreado.nombre,
         apellido: usuarioCreado.apellido,
         email: usuarioCreado.email,
@@ -89,7 +90,7 @@ export class AuthService {
 
     // 3. Si es válido, generamos su token de acceso por 15 minutos
     const payload = {
-      _id: usuario._id,
+      _id: usuario._id.toString(),
       email: usuario.email,
       nombreUsuario: usuario.nombreUsuario,
       perfil: usuario.perfil,
@@ -104,7 +105,7 @@ export class AuthService {
     return {
       token,
       user: {
-        _id: usuario._id,
+        _id: usuario._id.toString(),
         nombre: usuario.nombre,
         apellido: usuario.apellido,
         email: usuario.email,
@@ -113,6 +114,51 @@ export class AuthService {
         avatarUrl: usuario.avatarUrl
       }
     };
+  }
+
+  async obtenerTodosLosUsuarios() {
+  try {
+    // Busca todos los usuarios de la base de datos en la nube
+    // El '-' en '-password' le dice a Mongoose: "traeme todo MENOS la clave"
+    const usuarios = await this.UsuarioModel.find().select('-password').exec();
+    return usuarios;
+  } catch (error) {
+    throw new InternalServerErrorException('Error al invocar los registros de la base oculta');
+  }
+  }
+
+  findByEmail(email: string) {
+  return this.UsuarioModel.exists({ email });
+  }
+  
+  async generarTokenDeRefresco(payloadTokenAnterior: any) {
+    // 🛡️ Buscamos el ID de forma inteligente por si viene anidado o directo
+    const userId = payloadTokenAnterior?._id || payloadTokenAnterior?.user?._id;
+    const email = payloadTokenAnterior?.email || payloadTokenAnterior?.user?.email;
+    const nombreUsuario = payloadTokenAnterior?.nombreUsuario || payloadTokenAnterior?.user?.nombreUsuario;
+    const perfil = payloadTokenAnterior?.perfil || payloadTokenAnterior?.user?.perfil;
+
+    // Si a pesar de todo no pudimos rescatar un ID válido, frenamos antes del crash
+    if (!userId) {
+      console.error('❌ Error crítico: El payload del token anterior no contiene un _id válido.', payloadTokenAnterior);
+      throw new BadRequestException('Identidad espectral corrupta. No se puede refrescar.');
+    }
+
+    // Armamos el nuevo reclamo (claim) idéntico al que genera tu método 'ingresar'
+    const payload = {
+      _id: userId.toString(),
+      email: email || '',
+      nombreUsuario: nombreUsuario || 'Investigador Anónimo',
+      perfil: perfil || 'usuario', // Mantiene el rol (Admin/Usuario) para el Sprint 4
+    };
+
+    // Firmamos el token por 15 minutos exactos
+    const nuevoToken = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
+      algorithm: 'HS256',
+      expiresIn: '15m',
+    });
+
+    return { token: nuevoToken };
   }
 
 }

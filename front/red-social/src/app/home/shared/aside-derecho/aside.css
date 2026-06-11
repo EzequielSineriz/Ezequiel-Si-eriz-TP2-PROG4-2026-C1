@@ -1,0 +1,16 @@
+/* Brillo neón verde misterioso para los bordes activos y títulos */
+.shadow-emerald-glow {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.25);
+}
+
+/* Opcional: Si querés darle textura de piedra o ruido como el mockup, podés inyectar un patrón */
+.dark-input-feed {
+  background-color: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #e2e8f0;
+}
+.dark-input-feed:focus {
+  outline: none;
+  border-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}

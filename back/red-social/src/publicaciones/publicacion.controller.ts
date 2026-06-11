@@ -1,11 +1,23 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
-import { TokenGuard } from "src/auth/token/token.guard";
-import { PublicacionService } from "./publicacion.service";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { diskStorage } from "multer";
-import { extname } from "path";
-import { CreatePublicacionDto } from "./dto/create-publicacion.dto";
-import { UpdatePublicacionDto } from "./dto/update-publicacion.dto";
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Req,
+  UploadedFile,
+  UseGuards,
+  UseInterceptors,
+} from '@nestjs/common';
+import { TokenGuard } from 'src/auth/token/token.guard';
+import { PublicacionService } from './publicacion.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { CreatePublicacionDto } from './dto/create-publicacion.dto';
+import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 
 @Controller('publicaciones')
 @UseGuards(TokenGuard)
@@ -18,7 +30,8 @@ export class PublicacionController {
       storage: diskStorage({
         destination: './uploads/publicaciones', // Carpeta para las fotos de los posts
         filename: (req, file, callback) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const uniqueSuffix =
+            Date.now() + '-' + Math.round(Math.random() * 1e9);
           const ext = extname(file.originalname);
           callback(null, `post-${uniqueSuffix}${ext}`);
         },
@@ -31,14 +44,36 @@ export class PublicacionController {
     @UploadedFile() file: Express.Multer.File,
   ) {
     const usuarioId = req.user._id; // Sacamos el ID del Token de forma segura
-    const imagenUrl = file ? `/uploads/publicaciones/${file.filename}` : undefined;
-    
+    const imagenUrl = file
+      ? `/uploads/publicaciones/${file.filename}`
+      : undefined;
+
     return this.publicacionService.crear(createDto, usuarioId, imagenUrl);
+  }
+  @Post('/:id/like')
+  async darLike(@Param('id') id: string, @Req() req: any) {
+    const usuarioId = String(req.user._id); // Extraído del token de forma segura
+    return this.publicacionService.darLike(id, usuarioId);
+  }
+
+  @Post('/:id/dislike')
+  async darDislike(@Param('id') id: string, @Req() req: any) {
+    const usuarioId = String(req.user._id); // Extraído del token de forma segura
+    return this.publicacionService.darDislike(id, usuarioId);
   }
 
   @Get()
   obtenerTodas() {
     return this.publicacionService.obtenerTodas();
+  }
+
+  @Get('perfil/metricas')
+  async obtenerMetricasPerfil(@Req() req: any) {
+    const usuarioId = req.user._id;
+    console.log('--- SOLICITUD DE MÉTRICAS PARANORMALES ---');
+    return await this.publicacionService.obtenerMetricasPerfilUsuario(
+      usuarioId,
+    );
   }
 
   @Get('/:id')
@@ -61,16 +96,4 @@ export class PublicacionController {
     const usuarioId = req.user._id;
     return this.publicacionService.eliminar(id, usuarioId);
   }
-
-  @Put('/:id/like')
-async darLike(@Param('id') id: string, @Req() req: any) {
-  const usuarioId = req.user._id; // Extraído del token de forma segura
-  return this.publicacionService.darLike(id, usuarioId);
-}
-
-@Put('/:id/dislike')
-async darDislike(@Param('id') id: string, @Req() req: any) {
-  const usuarioId = req.user._id;
-  return this.publicacionService.darDislike(id, usuarioId);
-}
 }

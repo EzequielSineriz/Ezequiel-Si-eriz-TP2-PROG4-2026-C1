@@ -1,3 +1,58 @@
-/* You can add global styles to this file, and also import other style files */
+@theme {
+  /* Registramos tus colores góticos directamente en el CSS nativo */
+  --color-para-bg: #050505;
+  --color-para-card: #1a1a1a;
+  --color-para-text: #e0e0e0;
+  --color-blood: #a30000;
+  --color-blood-hover: #d10000;
+  --color-ovni: #00ffc3;
+  --color-ghost: #ffd700;
+
+  /* Registramos tus fuentes */
+  --font-logo: 'Creepster', cursive;
+  --font-body: 'Montserrat', sans-serif;
+
+  /* Glows neón personalizados */
+  --shadow-blood-glow: 0 0 15px rgba(163, 0, 0, 0.6);
+  --shadow-ovni-glow: 0 0 15px rgba(0, 255, 195, 0.6);
+}
+
+@import "tailwindcss"; /* 👈 Esta es la única línea que necesita Tailwind v4 */
+
+@theme {
+  /* ... tus otros colores ... */
+  --color-blood: #a30000;
+  --color-blood-hover: #d10000;
+
+  /* 👈 Agregamos el fondo de registro como una utilidad de imagen */
+  --background-image-fondo-registro: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)), url('/assets/images/login_fondo.jpg');
+}
 
 @import "tailwindcss";
+
+/* El body general se queda con el cementerio por defecto para el resto de la app */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-para-bg);
+  background-image: var(--background-image-fondo-registro);
+  background-size: cover;
+  background-attachment: fixed;
+}
+
+/* Tu clase personalizada adaptada a la sintaxis v4 */
+.dark-input {
+  width: 100%;
+  background-color: #101010;
+  border: 1px solid #303030;
+  color: white;
+  padding: 0.75rem;
+  border-radius: 0.25rem;
+  font-family: var(--font-body);
+  transition: all 0.3s duration;
+}
+.dark-input:focus {
+  outline: none;
+  border-color: var(--color-blood);
+  box-shadow: var(--shadow-blood-glow);
+}

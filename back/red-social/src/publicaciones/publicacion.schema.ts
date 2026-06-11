@@ -17,8 +17,8 @@ export class Publicacion {
     @Prop({ required: true, enum: ['fantasmas', 'ovnis', 'mitologia', 'general'], default: 'general' })
     categoria!: string;
 
-    @Prop({ default: [] })
-    comentarios!: string[]; // Lista de comentarios asociados a la publicación
+    @Prop({ type: [{ type: MongooseSchema.Types.ObjectId, ref: 'Comentario' }], default: [] })
+    comentarios!: string[]
 
     @Prop({ default: 0 })
     likes!: number; // Contador de "me gusta" para la publicación

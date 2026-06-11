@@ -1,0 +1,184 @@
+<div class="bg-fondo-registro bg-cover bg-no-repeat bg-fixed flex items-center justify-center min-h-screen p-4 font-body overflow-x-hidden">
+
+  <div class="w-full max-w-2xl bg-para-card/90 border border-white/10 p-6 lg:p-10 relative shadow-2xl backdrop-blur-md rounded-md">
+
+    <div class="absolute -top-1 -left-1 w-12 h-12 border-t-2 border-l-2 border-blood shadow-blood-glow"></div>
+    <div class="absolute -bottom-1 -right-1 w-12 h-12 border-b-2 border-r-2 border-blood shadow-blood-glow"></div>
+
+    <div class="mb-8 flex justify-between items-end">
+      <div>
+        <h3 class="font-logo text-3xl lg:text-5xl font-bold text-blood tracking-widest uppercase drop-shadow-[0_0_8px_rgba(163,0,0,0.6)]">
+          Iniciación Ocultista
+        </h3>
+        <p class="text-[11px] text-gray-400 mt-1 tracking-[0.2em] uppercase">Creá tu perfil y explora lo desconocido</p>
+      </div>
+      <span class="text-xs font-mono text-blood/50 hidden md:block">Versión 1.0</span>
+    </div>
+
+    <form [formGroup]="myForm" (ngSubmit)="onSubmit()" class="space-y-5" autocomplete="off">
+
+              <div class="flex flex-col items-center justify-center mb-6">
+          <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest mb-2 block">Identidad Visual (Avatar)</label>
+
+          <div class="relative w-24 h-24 rounded-full bg-black border-2 border-dashed border-blood/40 flex items-center justify-center overflow-hidden group transition-all hover:border-blood shadow-md hover:shadow-blood-glow">
+
+            @if (imagePreview) {
+              <img [src]="imagePreview" class="w-full h-full object-cover">
+            } @else {
+              <span class="text-2xl text-gray-600 group-hover:text-blood transition-colors">👤</span>
+            }
+
+            <input type="file"
+                  accept="image/*"
+                  (change)="onFileChange($event)"
+                  class="absolute inset-0 opacity-0 cursor-pointer z-10">
+
+            <div class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <span class="text-[9px] text-blood font-black uppercase tracking-wider">Subir Foto</span>
+            </div>
+          </div>
+        </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Nombre</label>
+          <input type="text" formControlName="nombre" placeholder="Bram"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'nombre')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'nombre')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              {{ formUtils.getFieldError(myForm, 'nombre') }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Apellido</label>
+          <input type="text" formControlName="apellido" placeholder="Stoker"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'apellido')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'apellido')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              {{ formUtils.getFieldError(myForm, 'apellido') }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Email</label>
+          <input type="email" formControlName="email" placeholder="lorreinewarren@paranormal.com"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'email')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'email')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              ⚠️ {{ formUtils.getFieldError(myForm, 'email') || 'Email inválido o ya iniciado' }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Nombre de Usuario (Alias)</label>
+          <input type="text" formControlName="nombreUsuario" placeholder="Warren_10"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'nombreUsuario')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'nombreUsuario')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              ⚠️ Mínimo 6 caracteres sin espacios
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Fecha de Nacimiento</label>
+          <input type="date" formControlName="fechaNacimiento"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'fechaNacimiento')"
+                 class="dark-input text-sm text-gray-400 focus:text-white">
+          @if (formUtils.isValidField(myForm, 'fechaNacimiento')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">⚠️ Requerido para el ritual</span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1 md:col-span-2">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Manifiesto Paranormal (Bio)</label>
+          <textarea formControlName="descripcion" placeholder="Contanos tu afinidad con el ocultismo, espectros o avistamientos..."
+                    class="dark-input text-sm h-20 resize-none"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Clave Secreta</label>
+          <input type="password" formControlName="password" placeholder="••••••••"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'password')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'password')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              {{ formUtils.getFieldError(myForm, 'password') || 'La clave debe tener al menos 8 caracteres, una mayúscula y un número' }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Confirmar Clave</label>
+          <input type="password" formControlName="confirmPassword" placeholder="••••••••"
+                 [class.border-blood]="formUtils.isValidField(myForm, 'confirmPassword')"
+                 class="dark-input text-sm">
+          @if (formUtils.isValidField(myForm, 'confirmPassword')) {
+            <span class="text-[10px] text-blood uppercase font-black tracking-wide mt-1 animate-pulse">
+              {{ formUtils.getFieldError(myForm, 'confirmPassword') || 'Las contraseñas no coinciden' }}
+            </span>
+          }
+        </div>
+      </div>
+
+      @if (myForm.errors && myForm.touched) {
+        <div class="bg-blood/10 border border-blood/50 p-3 text-center rounded">
+          <span class="text-[10px] text-blood uppercase font-black tracking-widest">
+            [ ERROR CRÍTICO: Las claves secretas no coinciden en el espejo ]
+          </span>
+        </div>
+      }
+
+      <div class="pt-2">
+        <div class="flex items-start gap-3 group">
+          <div class="relative flex items-center">
+            <input type="checkbox"
+                   id="terms"
+                   formControlName="terms"
+                   class="peer appearance-none w-5 h-5 border-2 border-blood/40 bg-black/50 checked:bg-blood checked:border-blood transition-all cursor-pointer rounded-sm">
+            <svg class="absolute w-5 h-5 pointer-events-none hidden peer-checked:block text-white"
+                 fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="4">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+
+          <label for="terms" class="text-[11px] lg:text-xs text-gray-400 leading-tight cursor-pointer group-hover:text-gray-300 transition-colors">
+            Acepto los <a class="text-blood hover:underline underline-offset-4 font-bold">Pactos de Servicio</a>,
+            las <a class="text-blood hover:underline underline-offset-4 font-bold">Leyes de Privacidad Ectoplásmica</a>
+            y la entrega de mis testimonios a la base de datos central.
+          </label>
+        </div>
+
+        @if (formUtils.isValidField(myForm, 'terms')) {
+          <span class="text-[10px] text-blood uppercase font-black mt-2 block tracking-wider animate-pulse">
+            [ ALERTA: Debe sellar el pacto de seguridad para continuar ]
+          </span>
+        }
+      </div>
+
+      <div class="pt-4 flex flex-col sm:flex-row gap-4">
+        <button type="submit"
+                class="flex-1 bg-blood hover:bg-blood-hover text-white font-black py-4 uppercase tracking-[0.2em] text-xs transition-all flex justify-between px-8 items-center group cursor-pointer rounded shadow-md hover:shadow-blood-glow">
+          Comenzar Iniciación
+          <span class="group-hover:translate-x-2 transition-transform">🩸</span>
+        </button>
+
+        <button type="button"
+                routerLink="/auth/login"
+                class="px-8 py-4 border border-white/10 bg-transparent text-gray-400 font-bold uppercase text-[10px] tracking-widest hover:text-white hover:border-blood transition-all cursor-pointer rounded">
+          Retornar
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>

@@ -1,0 +1,26 @@
+<div class="fixed inset-0 bg-cover bg-center bg-no-repeat z-0"
+     style="background-image: url('/assets/images/fondo_welcome.jpg');">
+</div>
+
+<div class="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-10 pointer-events-none"></div>
+
+<div class="relative min-h-screen flex flex-col z-20 text-gray-200 font-body">
+
+  <app-navbar-superior></app-navbar-superior>
+
+  <div class="w-full max-w-7xl mx-auto flex flex-1 h-screen">
+
+    <aside class="w-64 h-full border-r border-white/10 bg-black/40 backdrop-blur-md p-6 hidden md:flex flex-col justify-between shrink-0">
+      <app-aside-izquierdo class="h-full flex flex-col justify-between"></app-aside-izquierdo>
+    </aside>
+
+    <main class="flex-1 max-w-2xl border-r border-white/10 bg-black/20 backdrop-blur-[1px] overflow-y-auto h-full border-l md:border-l-0">
+      <router-outlet></router-outlet>
+    </main>
+
+    <aside class="w-80 p-6 space-y-4 hidden lg:block shrink-0">
+      <app-aside-trends></app-aside-trends>
+    </aside>
+
+  </div>
+</div>

@@ -1,0 +1,67 @@
+:root {
+  --accent-blood: #b91c1c;
+  --font-logo: 'Creepster', cursive;
+  --font-body: 'Montserrat', sans-serif;
+}
+
+/* ⛈️ Contenedor con fondo fijado y centrado milimétricamente */
+.login-universe {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.85)),
+                    url('/assets/images/login_fondo.jpg');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+}
+
+/* 🕯️ Inputs oscuros con estética misteriosa */
+input.dark-input {
+  background-color: rgba(5, 5, 5, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f3f4f6;
+  padding: 12px 14px;
+  border-radius: 6px;
+  width: 100%;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: var(--accent-blood);
+    box-shadow: 0 0 15px rgba(185, 28, 28, 0.35);
+  }
+}
+
+.flicker-neon {
+  font-family: var(--font-logo) !important;
+  animation: flicker 4s infinite alternate;
+}
+
+/* Animación rápida de aparición para la fluidez in-line */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes flicker {
+  0%, 18%, 22%, 25%, 53%, 57%, 100% {
+    text-shadow: 0 0 12px rgba(185, 28, 28, 0.8),
+                 0 0 25px rgba(185, 28, 28, 0.5),
+                 0 0 50px rgba(147, 51, 234, 0.3);
+    color: #ef4444;
+  }
+  20%, 24%, 55% {
+    text-shadow: none;
+    color: #450a0a; /* Se apaga momentáneamente dando un tono sangre coagulada */
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.25s ease-out forwards;
+}

@@ -1,0 +1,140 @@
+<div class="p-4 w-full text-gray-200 max-w-2xl mx-auto">
+
+  <a routerLink="/home" class="inline-flex items-center gap-2 text-xs text-gray-400 hover:text-emerald-400 mb-4 transition-colors uppercase tracking-wider font-bold">
+    ⬅️ Volver
+  </a>
+
+  @if (post()) {
+    <div class="rounded-lg bg-black/40 border border-white/10 shadow-xl overflow-hidden backdrop-blur-sm">
+
+      <div class="p-4 pb-3">
+        <div class="flex justify-between items-center mb-2">
+          <span class="font-bold text-emerald-400 text-sm">
+            👤 {{ post()!.autorId && typeof post()!.autorId === 'object' ? $any(post()!.autorId).nombreUsuario : 'Investigador' }}
+          </span>
+          <span class="text-[10px] text-gray-500 uppercase tracking-widest bg-zinc-900/80 px-2 py-0.5 rounded">
+            {{ post()!.categoria }}
+          </span>
+        </div>
+
+        <p class="text-base text-gray-200 mb-3 font-body leading-relaxed">
+          {{ post()!.contenido }}
+        </p>
+
+        @if (post()!.imagenUrl) {
+          <div class="rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-80 mb-3">
+            <img [src]="'http://localhost:3000' + post()!.imagenUrl" class="w-full object-cover" alt="Evidencia" />
+          </div>
+        }
+
+        <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex gap-6 items-center">
+          <span class="flex items-center gap-1.5">
+            💬 {{ post()!.comentarios | espectroComentarios }}
+          </span>
+          <button (click)="alternarLikePost()"
+                  [class.text-rose-500]="leDioLikeAlPost()"
+                  class="flex items-center gap-1.5 hover:text-rose-500 transition-colors bg-transparent border-none cursor-pointer text-xs">
+            {{ leDioLikeAlPost() ? '❤️' : '🖤' }} {{ post()!.likes }}
+          </button>
+        </div>
+      </div>
+
+      <div class="border-t border-white/10 bg-white/[0.01] p-3 flex gap-3 items-center">
+        <input
+          type="text"
+          [(ngModel)]="nuevoComentarioTexto"
+          placeholder="Postea tu respuesta..."
+          class="flex-1 bg-transparent border-none py-1 text-sm text-gray-200 focus:outline-none placeholder-gray-500"
+          (keyup.enter)="publicarComentario()"/>
+
+        <button
+          (click)="publicarComentario()"
+          [disabled]="!nuevoComentarioTexto.trim()"
+          class="text-emerald-400 hover:text-emerald-300 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer p-1 text-lg flex items-center justify-center">
+          ➔
+        </button>
+      </div>
+
+    </div>
+
+    <div class="mt-4 space-y-px bg-black/20 border border-white/5 rounded-lg overflow-hidden">
+
+      <div class="mt-4 space-y-px bg-black/20 border border-white/5 rounded-lg overflow-hidden">
+
+      @for (coment of comentarios(); track coment._id) {
+        <div class="p-4 bg-transparent border-b border-white/5 flex gap-3 transition-all hover:bg-white/[0.02]">
+          <div class="w-full space-y-1">
+
+            <div class="flex justify-between items-center text-xs">
+              <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-300">{{ coment.autorId.nombreUsuario }}</span>
+                <span class="text-[10px] text-gray-600 font-mono">{{ coment.createdAt | date:'shortTime' }}</span>
+
+                @if (coment.modificado) {
+                  <span class="text-[10px] text-amber-500/70 italic uppercase tracking-wider bg-amber-950/20 px-1.5 py-0.5 rounded border border-amber-900/30"
+                        [title]="'Alterado el: ' + (coment.fechaModificacion | date:'short')">
+                    ✍️ Editado ({{ coment.fechaModificacion | date:'shortTime' }})
+                  </span>
+                }
+              </div>
+
+              @if (coment.autorId?._id === usuarioLogueadoId) {
+                <div class="flex items-center gap-2">
+                  <button (click)="activarEdicion(coment)"
+                          class="text-gray-600 hover:text-amber-400 transition-colors bg-transparent border-none cursor-pointer p-0 text-xs"
+                          title="Editar testimonio">
+                    ✏️
+                  </button>
+                  <button (click)="eliminarComentario(coment._id)"
+                          class="text-gray-600 hover:text-red-500 transition-colors bg-transparent border-none cursor-pointer p-0 text-xs"
+                          title="Eliminar testimonio">
+                    🗑️
+                  </button>
+                </div>
+              }
+            </div>
+
+            @if (comentarioEditandoId === coment._id) {
+              <div class="flex gap-2 items-center pt-1">
+                <input type="text"
+                       [(ngModel)]="textoEdicionTemporal"
+                       class="flex-1 bg-zinc-900 border border-amber-500/40 rounded px-2 py-1 text-sm text-gray-200 focus:outline-none focus:border-amber-500"
+                       (keyup.enter)="guardarEdicion(coment._id)"
+                       (keyup.escape)="cancelarEdicion()"/>
+                <button (click)="guardarEdicion(coment._id)" class="text-emerald-400 hover:text-emerald-300 text-xs font-bold bg-transparent border-none cursor-pointer px-1">✓</button>
+                <button (click)="cancelarEdicion()" class="text-red-400 hover:text-red-300 text-xs font-bold bg-transparent border-none cursor-pointer px-1">✕</button>
+              </div>
+            } @else {
+              <p class="text-sm text-gray-300 font-body">
+                {{ coment.contenido }}
+              </p>
+            }
+
+            <div class="flex justify-between items-center text-[11px] text-gray-500 pt-2">
+              <div class="flex gap-4">
+                <button (click)="likeComentario(coment._id)"
+                        [class.text-emerald-400]="coment.usuariosQueDieronLike.includes(usuarioLogueadoId)"
+                        class="cursor-pointer hover:text-emerald-400 transition-colors bg-transparent border-none text-[11px] p-0">
+                  ▲ {{ coment.usuariosQueDieronLike.length }}
+                </button>
+                <button (click)="dislikeComentario(coment._id)"
+                        [class.text-red-500]="coment.usuariosQueDieronDislike.includes(usuarioLogueadoId)"
+                        class="cursor-pointer hover:text-red-500 transition-colors bg-transparent border-none text-[11px] p-0">
+                  ▼ {{ coment.usuariosQueDieronDislike.length }}
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      } @empty {
+        <div class="p-8 text-center text-xs text-gray-600 uppercase tracking-widest bg-black/10">
+          Silencio absoluto en este plano terrenal...
+        </div>
+      }
+
+    </div>
+
+    </div>
+  }
+</div>

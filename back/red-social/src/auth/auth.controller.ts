@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, UnauthorizedException, UseGuards, UseInterceptors } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -13,21 +13,26 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
   ) {}  
-  @Post('/registro')
-  // 1. Interceptamos el archivo con la clave 'avatar' (el mismo nombre que usará el Front en el FormData)
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './uploads/avatars', // Carpeta local donde se guardarán las fotos
-        filename: (req, file, callback) => {
-          // Generamos un nombre único metiendo la fecha actual para evitar colisiones
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `${uniqueSuffix}${ext}`);
-        },
-      }),
+ @Post('registro')
+  // 🔮 Interceptamos el archivo que venga bajo la llave 'avatar'
+  @UseInterceptors(FileInterceptor('avatar', {
+    storage: diskStorage({
+      destination: './uploads/avatars', // Carpeta raíz donde se guardarán los archivos
+      filename: (req, file, callback) => {
+        // Generamos un nombre único con la fecha para que no se pisen
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = extname(file.originalname);
+        callback(null, `avatar-${uniqueSuffix}${ext}`);
+      },
     }),
-  )
+    fileFilter: (req, file, callback) => {
+      // Validamos que sea estrictamente una imagen
+      if (!file.mimetype.match(/\/(jpg|jpeg|png)$/)) {
+        return callback(new Error('El archivo no es una imagen válida espectral'), false);
+      }
+      callback(null, true);
+    }
+  }))
   registrar(
     @Body() usuario: UserRegisterDto, 
     @UploadedFile() file: Express.Multer.File // Capturamos el archivo procesado
@@ -50,10 +55,6 @@ export class AuthController {
     const usuarioLogueado = req.user; 
     
     console.log('Datos del usuario desde el token:', usuarioLogueado);
-    // Ahora tenés acceso a:
-    // usuarioLogueado._id
-    // usuarioLogueado.email
-    // usuarioLogueado.perfil (usuario/administrador)
 
     return { 
       mensaje: `Acceso otorgado con éxito.`,
@@ -62,5 +63,54 @@ export class AuthController {
   }
 
   
+  @Get('usuarios') 
+  async findAll() {
+    return await this.authService.obtenerTodosLosUsuarios();
+  }
+
+
+  @Get('/check-email')
+  async checkEmail(@Query('email') email: string) {
+    // Le preguntamos al servicio si el email ya está registrado
+    const userExists = await this.authService.findByEmail(email); 
+    
+    // Devolvemos un objeto JSON que Angular pueda entender claramente
+    return { exists: !!userExists }; 
+  }
+
+@Post('/refrescar')
+@UseGuards(TokenGuard)
+async refrescar(@Req() req: any) {
+  // 🕵️‍♂️ Investigamos qué metió tu Guard dentro de la Request
+    console.log('--- REVISANDO CONTENIDO DEL REQ.USER ---', req.user);
+
+    if (!req.user) {
+      throw new UnauthorizedException('No se encontraron credenciales válidas en el espectro.');
+    }
+
+    // Le pasamos el req.user completo al servicio
+    return this.authService.generarTokenDeRefresco(req.user);
+}
+
+
   
+  @Post('autorizar')
+  @UseGuards(TokenGuard)
+  @HttpCode(HttpStatus.OK) // Devolvemos un 200 OK
+  async autorizar(@Req() req: any) {
+    // El TokenGuard ya decodificó el token y guardó al usuario en req.user
+    const usuarioLogueado = req.user; 
+    
+    console.log('--- VALIDACIÓN DE ACCESO ESPECTRAL ---');
+    console.log('Token válido para el usuario:', usuarioLogueado.nombreUsuario);
+
+    // Devolvemos los datos limpios del usuario al Frontend
+    return {
+      _id: usuarioLogueado._id,
+      email: usuarioLogueado.email,
+      nombreUsuario: usuarioLogueado.nombreUsuario,
+      perfil: usuarioLogueado.perfil,
+      avatarUrl: usuarioLogueado.avatarUrl || ''
+    };
+  }
 }   

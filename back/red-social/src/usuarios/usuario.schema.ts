@@ -1,4 +1,5 @@
 import {  Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Types } from "mongoose";
 
 @Schema()
 export class Usuario {
@@ -20,7 +21,7 @@ export class Usuario {
   @Prop({ required: true })
   fechaNacimiento!: Date;
 
-  @Prop()
+  @Prop({ default: 'Buscador de las verdades ocultas en las sombras.' })
   descripcion!: string;
 
   @Prop()
@@ -28,6 +29,12 @@ export class Usuario {
 
   @Prop({ default: 'usuario', enum: ['usuario', 'administrador'] })
   perfil!: string;
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Usuario' }], default: [] })
+  seguidores!: Types.ObjectId[];
+
+  @Prop({ type: [{ type: Types.ObjectId, ref: 'Usuario' }], default: [] })
+  siguiendo!: Types.ObjectId[];
 }
 
 export const UsuarioSchema = SchemaFactory.createForClass(Usuario);

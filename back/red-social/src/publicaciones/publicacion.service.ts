@@ -1,39 +1,47 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Publicacion } from './publicacion.schema';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
-import { NotFoundException, UnauthorizedException } from '@nestjs/common';
-
+import { Usuario } from '../usuarios/usuario.schema';
 
 @Injectable()
 export class PublicacionService {
   constructor(
     @InjectModel(Publicacion.name) private readonly publicacionModel: Model<Publicacion>,
+    @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
   ) {}
 
   // Crear una nueva publicación
-  async crear(createDto: CreatePublicacionDto, autorId: string, imagenUrl?: string) {
+  async crear(createDto: CreatePublicacionDto, autorId: string, imagenUrl?: string): Promise<any> {
     const nuevaPublicacion = new this.publicacionModel({
       ...createDto,
-      autorId: new Types.ObjectId(autorId), // Vinculamos el ID como ObjectId real
+      autorId: autorId, // 🔮 Lo pasamos como string directo para que no choque con tu Schema
       imagenUrl: imagenUrl || '',
     });
     return await nuevaPublicacion.save();
   }
 
   // Traer todas las publicaciones (Para el Feed)
-  async obtenerTodas() {
+  async obtenerTodas(sort: string = 'fecha', limit: number = 5, offset: number = 0): Promise<any> {
+    const orden = sort === 'likes' ? { likes: -1 } : { createdAt: -1 };
+
     return await this.publicacionModel
-      .find({ eliminada: false }) // Solo las que no se borraron
-      .sort({ createdAt: -1 })   // Las más recientes primero (gracias a timestamps: true)
-      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl') // ¡Mapea los datos del creador!
+      .find({ eliminada: false }) 
+      .sort(orden as any) 
+      .skip(Number(offset)) 
+      .limit(Number(limit))  
+      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl') 
+      .populate({
+        path: 'comentarios', 
+        populate: { path: 'autorId', select: 'nombreUsuario avatarUrl' } 
+      })
       .exec();
   }
 
   // Obtener una sola publicación por ID
-  async obtenerPorId(id: string) {
+  async obtenerPorId(id: string): Promise<any> {
     const publicacion = await this.publicacionModel
       .findOne({ _id: id, eliminada: false })
       .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
@@ -45,11 +53,10 @@ export class PublicacionService {
     return publicacion;
   }
 
-  // Editar una publicación (Validando que el que edita sea el dueño)
-  async actualizar(id: string, updateDto: UpdatePublicacionDto, usuarioId: string) {
+  // Editar una publicación
+  async actualizar(id: string, updateDto: UpdatePublicacionDto, usuarioId: string): Promise<any> {
     const publicacion = await this.obtenerPorId(id);
 
-    // Seguridad: Si el autorId del post no coincide con el id del token, afuera
     if (publicacion.autorId.toString() !== usuarioId) {
       throw new UnauthorizedException('No tenés permisos para editar esta publicación.');
     }
@@ -59,11 +66,15 @@ export class PublicacionService {
       .exec();
   }
 
-  // Borrado lógico (No destruye el dato, cambia el flag 'eliminada' a true)
-  async eliminar(id: string, usuarioId: string) {
+  // Borrado lógico
+  async eliminar(id: string, usuarioId: string): Promise<any> {
     const publicacion = await this.obtenerPorId(id);
 
-    if (publicacion.autorId.toString() !== usuarioId) {
+    const idDelAutorEnBD = publicacion.autorId && typeof publicacion.autorId === 'object'
+      ? (publicacion.autorId as any)._id.toString()
+      : publicacion.autorId.toString();
+
+    if (idDelAutorEnBD !== usuarioId) {
       throw new UnauthorizedException('No tenés permisos para eliminar esta publicación.');
     }
 
@@ -71,60 +82,83 @@ export class PublicacionService {
     return { mensaje: 'Publicación eliminada con éxito.' };
   }
 
-  // 👻 DAR/QUITAR LIKE
-async darLike(publicacionId: string, usuarioId: string) {
-  const publicacion = await this.publicacionModel.findById(publicacionId);
-  if (!publicacion) throw new NotFoundException('Publicación no encontrada');
+  // 👻 DAR/QUITAR LIKE (Arreglado el error de tipo de retorno BSON)
+  async darLike(publicacionId: string, usuarioId: string): Promise<any> {
+    const publicacion = await this.publicacionModel.findById(publicacionId);
+    if (!publicacion) throw new NotFoundException('Publicación no encontrada');
 
-  const yaDioLike = publicacion.usuariosQueDieronLike.includes(usuarioId);
-  const yaDioDislike = publicacion.usuariosQueDieronDislike.includes(usuarioId);
+    const yaDioLike = publicacion.usuariosQueDieronLike.includes(usuarioId);
 
-  if (yaDioLike) {
-    // Si ya le dio like, se lo sacamos (Toggle)
-    return await this.publicacionModel.findByIdAndUpdate(
-      publicacionId,
-      { $pull: { usuariosQueDieronLike: usuarioId } },
-      { new: true }
-    );
-  } else {
-    // Si no le dio like, lo agregamos y nos aseguramos de sacarlo de dislike si existía
-    return await this.publicacionModel.findByIdAndUpdate(
-      publicacionId,
-      {
-        $addToSet: { usuariosQueDieronLike: usuarioId },
-        $pull: { usuariosQueDieronDislike: usuarioId }
-      },
-      { new: true }
-    );
+    if (yaDioLike) {
+      publicacion.usuariosQueDieronLike = publicacion.usuariosQueDieronLike.filter(id => id !== usuarioId);
+    } else {
+      publicacion.usuariosQueDieronLike.push(usuarioId);
+      publicacion.usuariosQueDieronDislike = publicacion.usuariosQueDieronDislike.filter(id => id !== usuarioId);
+    }
+
+    publicacion.likes = publicacion.usuariosQueDieronLike.length;
+
+    const guardado = await publicacion.save();
+    return await guardado.populate({
+      path: 'autorId',
+      select: 'nombre apellido nombreUsuario avatarUrl'
+    });
   }
-}
 
-// 🛸 DAR/QUITAR DISLIKE
-async darDislike(publicacionId: string, usuarioId: string) {
-  const publicacion = await this.publicacionModel.findById(publicacionId);
-  if (!publicacion) throw new NotFoundException('Publicación no encontrada');
+  // 🛸 DAR/QUITAR DISLIKE (Arreglado el error de tipo de retorno BSON)
+  async darDislike(publicacionId: string, usuarioId: string): Promise<any> {
+    const publicacion = await this.publicacionModel.findById(publicacionId);
+    if (!publicacion) throw new NotFoundException('Publicación no encontrada');
 
-  const yaDioLike = publicacion.usuariosQueDieronLike.includes(usuarioId);
-  const yaDioDislike = publicacion.usuariosQueDieronDislike.includes(usuarioId);
+    const yaDioDislike = publicacion.usuariosQueDieronDislike.includes(usuarioId);
 
-  if (yaDioDislike) {
-    // Si ya tiene dislike, se lo quitamos
-    return await this.publicacionModel.findByIdAndUpdate(
-      publicacionId,
-      { $pull: { usuariosQueDieronDislike: usuarioId } },
-      { new: true }
-    );
-  } else {
-    // Si no tiene, lo agregamos a dislike y lo removemos de likes
-    return await this.publicacionModel.findByIdAndUpdate(
-      publicacionId,
-      {
-        $addToSet: { usuariosQueDieronDislike: usuarioId },
-        $pull: { usuariosQueDieronLike: usuarioId }
-      },
-      { new: true }
-    );
+    if (yaDioDislike) {
+      publicacion.usuariosQueDieronDislike = publicacion.usuariosQueDieronDislike.filter(id => id !== usuarioId);
+    } else {
+      publicacion.usuariosQueDieronDislike.push(usuarioId);
+      publicacion.usuariosQueDieronLike = publicacion.usuariosQueDieronLike.filter(id => id !== usuarioId);
+    }
+
+    publicacion.likes = publicacion.usuariosQueDieronLike.length;
+
+    const guardado = await publicacion.save();
+    return await guardado.populate({
+      path: 'autorId',
+      select: 'nombre apellido nombreUsuario avatarUrl'
+    });
   }
-}
 
+  // 📊 MÉTRICAS DEL PERFIL (Arreglado pasándole el string directo en el objeto query)
+  async obtenerMetricasPerfilUsuario(usuarioId: string): Promise<any> {
+    // 1. Buscamos las últimas 3 publicaciones filtrando por string
+    const ultimasPublicaciones = await this.publicacionModel
+      .find({ autorId: usuarioId, eliminada: false }) // 🔮 Cambiado a 'usuarioId' string plano
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .populate({
+        path: 'comentarios',
+        match: { eliminado: false },
+        populate: { path: 'autorId', select: 'nombreUsuario avatarUrl' }
+      })
+      .exec();
+
+    // 2. Contamos cuántas publicaciones totales tiene creadas
+    const totalPublicaciones = await this.publicacionModel.countDocuments({ 
+      autorId: usuarioId, // 🔮 Cambiado a 'usuarioId' string plano
+      eliminada: false 
+    });
+
+    // 3. Calculamos la suma total de Me Gustas acumulados de TODOS sus posteos
+    const todosSusPosteos = await this.publicacionModel.find({ 
+      autorId: usuarioId, // 🔮 Cambiado a 'usuarioId' string plano
+      eliminada: false 
+    });
+    const meGustasTotales = todosSusPosteos.reduce((acumulador, post) => acumulador + (post.likes || 0), 0);
+
+    return {
+      ultimasPublicaciones,
+      totalPublicaciones,
+      meGustasTotales
+    };
+  }
 }
