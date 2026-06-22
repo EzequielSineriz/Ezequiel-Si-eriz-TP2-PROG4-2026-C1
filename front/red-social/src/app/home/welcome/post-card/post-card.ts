@@ -3,6 +3,8 @@ import { Component, EventEmitter, inject, Input, input, Output } from '@angular/
 import { IPublicacion } from '../../publicaciones/publicaciones.interface';
 import Swal from 'sweetalert2';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../auth/services/auth.service';
+import { PublicacionesService } from '../../publicaciones/publicaciones.service';
 
 @Component({
   selector: 'app-post-card',
@@ -12,15 +14,17 @@ import { Router } from '@angular/router';
 })
 export class PostCard {
 
-@Input({ required: true }) post!: IPublicacion;
+  @Input({ required: true }) post!: IPublicacion;
   @Input({ required: true }) usuarioActualId: string = '';
   @Output() onLike = new EventEmitter<void>();
   @Output() onDelete = new EventEmitter<void>();
 
 
-
-
   private router = inject(Router);
+
+  public authService = inject(AuthService);
+
+  public publicacionesService = inject(PublicacionesService);
 
 
 obtenerNombreAutor(): string {
@@ -49,29 +53,10 @@ obtenerNombreAutor(): string {
 
   // 🩸 Alerta personalizada gótica para confirmar la destrucción del registro
   confirmarEliminacion() {
-    Swal.fire({
-      title: '<span class="font-logo uppercase tracking-widest text-xl text-red-600">¿Destruir Evidencia?</span>',
-      html: '<span class="font-body text-sm text-gray-300">Esta acción borrará el registro del plano terrenal de forma permanente.</span>',
-      icon: 'warning',
-      showCancelButton: true,
-      background: '#1a1a1a', // Fondo oscuro de tu carta
-      color: '#e0e0e0',
-      confirmButtonColor: '#a30000', // Rojo sangre
-      cancelButtonColor: '#3f3f46',  // Gris zinc
-      confirmButtonText: 'SÍ, BORRAR',
-      cancelButtonText: 'CONSERVAR',
-      iconColor: '#a30000',
-      customClass: {
-        popup: 'border border-red-900/40 shadow-[0_0_15px_rgba(163,0,0,0.3)] rounded-md',
-        confirmButton: 'font-body uppercase tracking-wider font-bold px-4 py-2 rounded text-xs cursor-pointer',
-        cancelButton: 'font-body uppercase tracking-wider font-bold px-4 py-2 rounded text-xs cursor-pointer'
-      }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        // Si el usuario acepta, disparamos el evento hacia el feed para impactar la API
-        this.onDelete.emit();
-      }
-    });
+    this.desplegarAlertaConfirmacion(
+      '¿Destruir Evidencia?',
+      'Esta acción borrará el registro del plano terrenal de forma permanente.'
+    );
   }
 
   irAlDetalle(event: Event) {
@@ -83,5 +68,33 @@ obtenerNombreAutor(): string {
 
   this.router.navigate(['/home/publicaciones', this.post._id]);
 }
+
+confirmarPurgaPublicacion() {
+    this.desplegarAlertaConfirmacion(
+      '¿PURGAR REGISTRO DEL NEXO?',
+      'Esta acción purgará la publicación y todos sus comentarios del registro histórico de forma administrativa.');
+  }
+
+
+private desplegarAlertaConfirmacion(titulo: string, subitulo: string) {
+    Swal.fire({
+      title: `<span class="font-logo uppercase tracking-widest text-xl text-red-600">${titulo}</span>`,
+      html: `<span class="font-body text-sm text-gray-300">${subitulo}</span>`,
+      icon: 'warning',
+      showCancelButton: true,
+      background: '#1a1a1a',
+      color: '#e0e0e0',
+      confirmButtonColor: '#a30000',
+      cancelButtonColor: '#3f3f46',
+      confirmButtonText: 'SÍ, PURGAR',
+      cancelButtonText: 'CONSERVAR',
+      iconColor: '#a30000'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Le avisamos al feed que borre este post en particular
+        this.onDelete.emit();
+      }
+    });
+  }
 
 }

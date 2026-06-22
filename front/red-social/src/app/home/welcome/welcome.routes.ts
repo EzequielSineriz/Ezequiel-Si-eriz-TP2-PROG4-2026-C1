@@ -1,6 +1,7 @@
 // aca van a estar las rutas hijas de welcome, como my-profile, etc. para que se rendericen dentro del router-outlet de welcome.html
 import { Routes } from '@angular/router';
 import { authGuard } from '../../auth/guard/auth.guard';
+import { adminGuard } from '../../auth/guard/admin.guard';
 
 export const welcomeRoutes: Routes = [
 {
@@ -19,7 +20,17 @@ export const welcomeRoutes: Routes = [
       {
         path: 'publicaciones/:id', //  Cuando la ruta sea /home/publicaciones/6a25f5a...
         loadComponent: () => import('../publicaciones/publicacion.component').then((m) => m.DetallePublicacionComponent),
-      }
+      },
+      {
+        path: 'dashboard/usuarios',
+        canActivate: [adminGuard],
+        loadComponent: () => import('../usuarios/dashboard.usuarios').then((m) => m.DashboardUsuarios),
+      },/*
+      {
+        path: 'dashboard/estadisticas',
+        canActivate: [adminGuard],
+        loadComponent: () => import('./dashboard/estadisticas/estadisticas').then((m) => m.DashboardEstadisticas),
+      }*/
     ]
   }
 ];

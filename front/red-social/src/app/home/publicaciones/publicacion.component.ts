@@ -1,6 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
 import { EspectroComentariosPipe } from './comentarios/comentarios-count.pipe';
@@ -8,6 +8,7 @@ import { IComentario } from './comentarios/comentarios.interfaces';
 import { ComentariosService } from './comentarios/comentarios.service';
 import { IPublicacion } from './publicaciones.interface';
 import { PublicacionesService } from './publicaciones.service';
+import { AuthService } from '../../auth/services/auth.service';
 
 @Component({
   selector: 'app-publicacion',
@@ -17,8 +18,10 @@ import { PublicacionesService } from './publicaciones.service';
 })
 export class DetallePublicacionComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private pubService = inject(PublicacionesService);
+  public pubService = inject(PublicacionesService);
   private comentarioService = inject(ComentariosService);
+  public authService = inject(AuthService);
+  private router = inject(Router);
 
   public post = signal<IPublicacion | null>(null);
   public comentarios = signal<IComentario[]>([]);
@@ -65,6 +68,49 @@ export class DetallePublicacionComponent implements OnInit {
       error: (err) => console.error('Error invocando el hilo de comentarios:', err)
     });
   }
+
+  // Agregá este método dentro de tu clase DetallePublicacionComponent:
+
+eliminarPublicacionActual() {
+  const p = this.post();
+  if (!p) return;
+
+  Swal.fire({
+    title: '<span class="font-logo text-xl text-red-600 uppercase tracking-widest">¿Purgar Evidencia?</span>',
+    html: '<span class="font-body text-sm text-gray-300">Esta publicación y todos sus comentarios asociados serán eliminados del plano actual.</span>',
+    icon: 'warning',
+    showCancelButton: true,
+    background: '#1a1a1a',
+    color: '#e0e0e0',
+    confirmButtonColor: '#a30000',
+    cancelButtonColor: '#3f3f46',
+    confirmButtonText: 'SÍ, PURGAR',
+    cancelButtonText: 'CONSERVAR',
+    customClass: {
+      popup: 'border border-red-900/40 shadow-xl rounded-md',
+      confirmButton: 'font-body uppercase tracking-wider font-bold px-4 py-2 rounded text-xs cursor-pointer',
+      cancelButton: 'font-body uppercase tracking-wider font-bold px-4 py-2 rounded text-xs cursor-pointer'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+      this.pubService.eliminarPublicacion(p._id).subscribe({
+        next: () => {
+          Swal.fire({
+            title: 'Evidencia Purgada',
+            text: 'El registro ha sido removido con éxito.',
+            icon: 'success',
+            background: '#1a1a1a',
+            color: '#e0e0e0',
+            confirmButtonColor: '#3f3f46'
+          });
+          // Volvemos al feed principal ya que esta publicación ya no existe
+          this.router.navigate(['/home']);
+        },
+        error: (err) => console.error('Error al purgar la publicación:', err)
+      });
+    }
+  });
+}
 
 
   eliminarComentario(id: string) {

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { PostBox } from "../post-box/post-box";
 import { PostCard } from "../post-card/post-card";
 import { IPublicacion } from '../../publicaciones/publicaciones.interface';
@@ -15,8 +15,8 @@ export class Feed implements OnInit {
   private pubService = inject(PublicacionesService);
   public usuarioLogueadoId: string = localStorage.getItem('paranormal_user') || '';
 
-  // Estados del feed
-  public postsArray: IPublicacion[] = [];
+  // cambiar a signals
+  public postsArray = signal<IPublicacion[]>([]);
   public criterioOrden: 'fecha' | 'likes' = 'fecha';
 
   // Paginación
@@ -47,9 +47,11 @@ export class Feed implements OnInit {
           }
 
           if (append) {
-            this.postsArray = [...this.postsArray, ...nuevosPosts];
+            // 👈 .update() nos da el estado anterior para fusionarlo con el nuevo
+            this.postsArray.update(posts => [...posts, ...nuevosPosts]);
           } else {
-            this.postsArray = nuevosPosts;
+            // 👈 .set() reemplaza por completo el valor de la Signal
+            this.postsArray.set(nuevosPosts);
           }
         },
         error: (err) => console.error('Error trayendo reportes del más allá:', err)
@@ -91,7 +93,7 @@ export class Feed implements OnInit {
       }
 
       // Se añade inmediatamente arriba en la UI y Angular detecta el cambio de inmediato
-      this.postsArray = [postCreado, ...this.postsArray];
+      this.postsArray.update(posts => [postCreado, ...posts]);
     },
     error: (err) => console.error('Error al archivar la evidencia:', err)
   });
@@ -102,7 +104,7 @@ export class Feed implements OnInit {
     this.pubService.eliminarPublicacion(id).subscribe({
     next: () => {
       // Si el plano astral del backend confirma el borrado, lo sacamos de la UI al instante
-      this.postsArray = this.postsArray.filter(p => p._id !== id);
+      this.postsArray.update(posts => posts.filter(p => p._id !== id));
     },
     error: (err) => {
       console.error('El ritual de eliminación falló en el servidor:', err);
@@ -118,7 +120,7 @@ export class Feed implements OnInit {
   this.pubService.darLike(post._id).subscribe({
     next: (postActualizado) => {
       // 🔥 Mapeamos creando un array completamente nuevo para forzar la reactividad de la UI
-      this.postsArray = this.postsArray.map(p => p._id === post._id ? postActualizado : p);
+      this.postsArray.update(posts => posts.map(p => p._id === postActualizado._id ? postActualizado : p));
     },
     error: (err) => console.error('Error al tramitar el me gusta:', err)
   });

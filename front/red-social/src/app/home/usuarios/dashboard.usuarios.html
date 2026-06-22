@@ -1,0 +1,200 @@
+<div class="sticky top-0 bg-black/60 backdrop-blur-md border-b border-white/10 p-4 z-20 flex justify-between items-center">
+  <h2 class="text-sm font-bold tracking-widest uppercase text-red-500 drop-shadow-[0_0_5px_rgba(239,68,68,0.2)] font-logo">
+    👁️ Nexo de Control Supremo
+  </h2>
+
+  <div class="flex gap-3 text-[11px] uppercase tracking-wider font-bold">
+    <button
+      (click)="cambiarVista('listar')"
+      [class]="vistaActual() === 'listar' ? 'text-red-500 border-b border-red-600 font-black' : 'text-gray-400 hover:text-gray-200 transition-colors' ">
+      📜 Manuscrito de Usuarios
+    </button>
+    <span class="text-white/10">|</span>
+    <button
+      (click)="cambiarVista('crear')"
+      [class]="vistaActual() === 'crear' ? 'text-red-500 border-b border-red-600 font-black' : 'text-gray-400 hover:text-gray-200 transition-colors' ">
+      🔮 Invocar Miembro
+    </button>
+  </div>
+</div>
+
+<div class="p-4 pb-24">
+
+  @if (vistaActual() === 'listar') {
+    <div class="space-y-3">
+      @for (user of usuarios(); track user._id) {
+        <div [class.opacity-50]="!user.activo" [class.border-red-900/50]="!user.activo" class="p-4 bg-black/30 backdrop-blur-sm rounded-lg border border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300 hover:border-red-900/30">
+          <div class="flex items-center gap-3">
+            <div [class]="user.perfil === 'admin' ? 'border-red-600/40 text-red-500 shadow-[0_0_8px_rgba(163,0,0,0.2)]' : 'border-zinc-700 text-zinc-400'" class="w-10 h-10 rounded-full bg-zinc-950 shrink-0 flex items-center justify-center text-xs border font-bold">
+              {{ user.perfil === 'admin' ? '💀' : '🕵️' }}
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h4 class="text-sm font-bold text-gray-200">{{ user.nombreUsuario }}</h4>
+                <span [class]="user.perfil === 'admin' ? 'bg-red-950/40 text-red-400 border-red-500/20' : 'bg-zinc-900/50 text-zinc-400 border-white/5'" class="text-[9px] uppercase font-black tracking-widest px-1.5 py-0.5 rounded border">
+                  {{ user.perfil }}
+                </span>
+                @if (!user.activo) { <span class="text-[8px] uppercase font-black bg-red-600 text-white px-1 rounded">Suspendido</span> }
+              </div>
+              <p class="text-xs text-gray-500 font-mono">{{ user.email }}</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4 justify-between sm:justify-end border-t border-white/5 sm:border-none pt-2 sm:pt-0">
+            <div class="flex gap-2">
+              <button (click)="verPublicacionesUsuario(user._id)" class="text-[10px] bg-white/5 text-gray-300 hover:bg-white/10 px-2.5 py-1.5 rounded uppercase font-bold tracking-wider transition-all cursor-pointer">🔍 Inspeccionar</button>
+              <button (click)="alternarEstadoUsuario(user)" [class]="user.activo ? 'bg-red-950/20 text-red-400 hover:bg-red-700 hover:text-white' : 'bg-emerald-950/20 text-emerald-400 hover:bg-emerald-600 hover:text-white'" class="text-[10px] px-2.5 py-1.5 rounded uppercase font-black tracking-wider transition-all cursor-pointer">
+                {{ user.activo ? 'Destierro' : 'Reincorporar' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      } @empty {
+        <p class="text-center text-xs text-gray-500 py-10 uppercase tracking-widest">El plano espectral se encuentra vacío...</p>
+      }
+    </div>
+  }
+
+  @if (vistaActual() === 'crear') {
+    <form [formGroup]="registroForm" (ngSubmit)="crearNuevoUsuario()" class="space-y-5 max-w-2xl mx-auto bg-black/40 border border-white/10 p-6 lg:p-8 rounded-xl backdrop-blur-md shadow-2xl relative">
+
+      <h3 class="font-logo text-xl font-bold text-red-600 tracking-widest text-center uppercase drop-shadow-[0_0_5px_rgba(163,0,0,0.4)] pb-3 border-b border-white/5">
+        Formulario de Alta Prohibida
+      </h3>
+
+      <div class="flex flex-col items-center justify-center mb-4">
+        <label class="text-[11px] text-gray-400 uppercase font-black tracking-widest mb-2 block">Identidad Visual (Avatar)</label>
+        <div class="relative w-20 h-20 rounded-full bg-zinc-950 border-2 border-dashed border-red-700/40 flex items-center justify-center overflow-hidden group transition-all hover:border-red-600 shadow-md">
+          @if (imagePreview) {
+            <img [src]="imagePreview" class="w-full h-full object-cover">
+          } @else {
+            <span class="text-xl text-gray-600 group-hover:text-red-500 transition-colors">👤</span>
+          }
+          <input type="file" accept="image/*" (change)="onFileChange($event)" class="absolute inset-0 opacity-0 cursor-pointer z-10">
+          <div class="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <span class="text-[8px] text-red-500 font-black uppercase tracking-wider">Subir Foto</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Nombre</label>
+          <input type="text" formControlName="nombre" placeholder="Bram"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'nombre')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'nombre')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              {{ formUtils.getFieldError(registroForm, 'nombre') }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Apellido</label>
+          <input type="text" formControlName="apellido" placeholder="Stoker"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'apellido')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'apellido')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              {{ formUtils.getFieldError(registroForm, 'apellido') }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Email</label>
+          <input type="email" formControlName="email" placeholder="user@utn.com"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'email')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'email')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              ⚠️ Email inválido o ya iniciado
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Nombre de Usuario (Alias)</label>
+          <input type="text" formControlName="nombreUsuario" placeholder="Warren_10"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'nombreUsuario')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'nombreUsuario')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              ⚠️ Mínimo 6 caracteres sin espacios
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Fecha de Nacimiento</label>
+          <input type="date" formControlName="fechaNacimiento"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'fechaNacimiento')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-400 focus:text-white focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'fechaNacimiento')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">⚠️ Requerido para el ritual</span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1 md:col-span-2">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Manifiesto Paranormal (Bio)</label>
+          <textarea formControlName="descripcion" placeholder="Contanos su afinidad con el nexo..."
+                    class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono h-16 resize-none"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Clave Secreta</label>
+          <input type="password" formControlName="password" placeholder="••••••••"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'password')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'password')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              {{ formUtils.getFieldError(registroForm, 'password') || 'Clave no válida' }}
+            </span>
+          }
+        </div>
+
+        <div class="flex flex-col gap-1">
+          <label class="text-[11px] text-gray-300 uppercase font-bold tracking-wider">Confirmar Clave</label>
+          <input type="password" formControlName="confirmPassword" placeholder="••••••••"
+                 [class.border-red-600]="formUtils.isValidField(registroForm, 'confirmPassword')"
+                 class="bg-zinc-950/60 border border-white/10 rounded px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-red-600/50 transition-colors font-mono">
+          @if (formUtils.isValidField(registroForm, 'confirmPassword')) {
+            <span class="text-[10px] text-red-500 uppercase font-black tracking-wide mt-1">
+              Las contraseñas no coinciden
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-2 bg-black/40 p-4 border border-white/5 rounded-lg mt-2">
+        <label class="text-[10px] text-gray-400 uppercase font-bold tracking-wider">Rango de Iniciación</label>
+        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 mt-1">
+          <label class="flex items-center gap-2 text-xs text-gray-300 cursor-pointer">
+            <input type="radio" formControlName="perfil" value="usuario" class="accent-red-600 w-4 h-4">
+            Buscador Ordinario (Usuario)
+          </label>
+          <label class="flex items-center gap-2 text-xs text-red-500 font-bold cursor-pointer">
+            <input type="radio" formControlName="perfil" value="admin" class="accent-red-600 w-4 h-4">
+            Vigilante del Nexo (Administrador)
+          </label>
+        </div>
+      </div>
+
+      @if (registroForm.errors && registroForm.touched) {
+        <div class="bg-red-950/20 border border-red-700/50 p-2.5 text-center rounded">
+          <span class="text-[9px] text-red-500 uppercase font-black tracking-widest">
+            [ ERROR CRÍTICO: Las claves secretas no coinciden en el espejo ]
+          </span>
+        </div>
+      }
+
+      <button type="submit"
+              class="w-full bg-red-950/30 border border-red-700/50 text-red-500 hover:bg-red-600 hover:text-white transition-all py-3 rounded uppercase font-black tracking-widest text-xs cursor-pointer shadow-[0_0_15px_rgba(163,0,0,0.1)]">
+        ⚡ Forjar Credenciales Especiales
+      </button>
+
+    </form>
+  }
+
+</div>

@@ -67,20 +67,38 @@ export class PublicacionService {
   }
 
   // Borrado lógico
-  async eliminar(id: string, usuarioId: string): Promise<any> {
-    const publicacion = await this.obtenerPorId(id);
+  // Borrado lógico
+async eliminar(id: string, usuario: any): Promise<any> {
+  const publicacion = await this.obtenerPorId(id);
 
-    const idDelAutorEnBD = publicacion.autorId && typeof publicacion.autorId === 'object'
-      ? (publicacion.autorId as any)._id.toString()
-      : publicacion.autorId.toString();
+  // 1. Nos aseguramos de extraer el ID plano del autor de la publicación
+  const idDelAutorEnBD = publicacion.autorId && typeof publicacion.autorId === 'object'
+    ? (publicacion.autorId as any)._id.toString()
+    : publicacion.autorId.toString();
 
-    if (idDelAutorEnBD !== usuarioId) {
-      throw new UnauthorizedException('No tenés permisos para eliminar esta publicación.');
-    }
+  // 2. Nos aseguramos de extraer el ID plano del usuario logueado que viene de la request
+  // A veces Mongoose inyecta un ObjectId o un objeto en req.user, forzamos a String.
+  const idDelUsuarioLogueado = usuario._id ? usuario._id.toString() : usuario.toString();
+  const perfilUsuarioLogueado = usuario.perfil || '';
 
-    await this.publicacionModel.findByIdAndUpdate(id, { eliminada: true }).exec();
-    return { mensaje: 'Publicación eliminada con éxito.' };
+  // 🔮 LOG DE PURIFICACIÓN: Mira esto en la terminal de NestJS cuando tires el tacho
+  console.log('--- DETECTANDO ENERGÍAS EN EL SERVIDOR ---');
+  console.log('ID Autor del Post en BD:', idDelAutorEnBD);
+  console.log('ID Usuario de la Request:', idDelUsuarioLogueado);
+  console.log('Perfil Usuario de la Request:', perfilUsuarioLogueado);
+
+  const esDuenio = idDelAutorEnBD === idDelUsuarioLogueado;
+  const esAdmin = perfilUsuarioLogueado === 'admin';
+
+  console.log('¿Es dueño?:', esDuenio, '| ¿Es Admin?:', esAdmin);
+
+  if (!esDuenio && !esAdmin) {
+    throw new UnauthorizedException('No tenés permisos para eliminar esta publicación.');
   }
+
+  await this.publicacionModel.findByIdAndUpdate(id, { eliminada: true }).exec();
+  return { mensaje: 'Publicación eliminada con éxito.' };
+}
 
   // 👻 DAR/QUITAR LIKE (Arreglado el error de tipo de retorno BSON)
   async darLike(publicacionId: string, usuarioId: string): Promise<any> {

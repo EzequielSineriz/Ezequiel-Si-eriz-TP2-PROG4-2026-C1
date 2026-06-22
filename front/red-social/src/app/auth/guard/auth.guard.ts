@@ -6,18 +6,13 @@ export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
 
-  // Verificamos si existe el token guardado en el plano terrenal del navegador
+  // Verificamos si hay un usuario activo en el Signal reactivo
   if (authService.usuarioActual()) {
-    return true; // Acceso concedido al plano home
+    return true; // Acceso concedido al entorno seguro (Feed, Perfil, etc.)
   }
 
-  // Si no está validado todavía pero hay un token dando vueltas, lo mandamos a la precarga
-  if (localStorage.getItem('paranormal_token')) {
-    router.navigate(['/']);
-    return false;
-  }
-
-  // Si no hay nada de nada, directo al calabozo del login
+  // Si no hay sesión activa en RAM, directo al login
+  console.warn('🔮 Acceso denegado: No se detectaron energías activas. Redirigiendo...');
   router.navigate(['/auth/login']);
   return false;
 };

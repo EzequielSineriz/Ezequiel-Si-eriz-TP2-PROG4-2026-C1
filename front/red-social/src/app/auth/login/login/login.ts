@@ -14,9 +14,10 @@ import { FormUtils } from '../../../utils/forms.utils';
 })
 export class Login {
 
-private fb = inject(FormBuilder);
+  private fb = inject(FormBuilder);
   public authService = inject(AuthService);
   public formUtils = FormUtils;
+  private router = inject(Router);
 
   public mutado = signal<boolean>(true);
 
@@ -110,7 +111,37 @@ private fb = inject(FormBuilder);
       this.formulario.markAllAsTouched();
       return;
     }
+
     console.log('Invocando acceso a la Zona Oscura:', this.formulario.value);
-    this.authService.login(this.formulario.value as ILogin);
+
+    this.authService.login(this.formulario.value as ILogin).subscribe({
+      next: (response: any) => {
+        console.log('Respuesta recibida en el componente:', response);
+
+        if (!this.authService.verificarEstadoActivo(response.user)) {
+          return; // Frena el flujo, el servicio ya le tiró el cierre de sesión y alerta gótica
+        }
+
+        // ✨ ASEGURAMOS QUE EL DISCO ESCRIBA EL TOKEN CORRECTO DEL BACKEND DE RENDER
+      localStorage.setItem('paranormal_token', response.token);
+      localStorage.setItem('paranormal_user', JSON.stringify(response.user));
+
+      // Actualizamos la señal reactiva
+      this.authService.usuarioActual.set(response.user);
+
+      // Le damos un respiro de 150ms para que impacte en el navegador antes de saltar al home
+      setTimeout(() => {
+        this.router.navigate(['/home']);
+      }, 150);
+      },
+      error: (err) => {
+        console.error('Ritual de login fallido:', err);
+        this.authService.mostrarAlertaGotica(
+          'Sincronización Fallida',
+          err.error?.message || 'Las credenciales no coinciden con nuestros registros.',
+          'error'
+        );
+      }
+    });
   }
 }

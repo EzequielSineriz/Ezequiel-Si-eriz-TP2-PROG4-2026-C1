@@ -93,7 +93,7 @@ export class PublicacionController {
 
   @Delete('/:id')
   eliminar(@Param('id') id: string, @Req() req: any) {
-    const usuarioId = req.user._id;
-    return this.publicacionService.eliminar(id, usuarioId);
+    const usuario= req.user;
+    return this.publicacionService.eliminar(id, usuario);
   }
 }

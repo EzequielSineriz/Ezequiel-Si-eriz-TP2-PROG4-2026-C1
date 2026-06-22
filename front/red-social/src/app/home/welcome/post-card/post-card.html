@@ -67,6 +67,13 @@
         </span>
       </div>
 
+      @if (authService.esAdmin) {
+    <button (click)="$event.stopPropagation(); confirmarPurgaPublicacion()"
+            class="text-[10px] bg-blood/20 text-blood hover:bg-blood hover:text-white px-3 py-1.5 rounded uppercase font-black tracking-widest transition-all cursor-pointer">
+      ☠️ Archivar Registro
+    </button>
+  }
+
       @if (esMiPost) {
         <button
           (click)="$event.stopPropagation(); confirmarEliminacion()"
@@ -75,6 +82,7 @@
           🗑️
         </button>
       }
+
     </div>
 
   </div>

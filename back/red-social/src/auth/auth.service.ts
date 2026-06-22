@@ -80,6 +80,10 @@ export class AuthService {
     if (!usuario) {
       throw new UnauthorizedException('Credenciales incorrectas.');
     }
+    // Verificamos si el usuario está activo antes de comparar la contraseña
+    if (!usuario.activo) {
+      throw new UnauthorizedException('Tu cuenta ha sido deshabilitada. Contacta al administrador para más información.');
+    }
 
     // 2. Verificar contraseña encriptada (Dos pasos)
     const esPasswordValida = await bcrypt.compare(password, usuario.password);

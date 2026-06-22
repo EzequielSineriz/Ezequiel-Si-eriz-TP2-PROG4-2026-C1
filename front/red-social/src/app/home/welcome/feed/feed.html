@@ -13,7 +13,7 @@
 <app-post-box (onNuevoPost)="agregarNuevoPost($event)"></app-post-box>
 
 <div class="divide-y divide-white/10 pb-20">
-  @for (item of postsArray; track item._id) {
+  @for (item of postsArray(); track item._id) {
     <app-post-card
       [post]="item"
       [usuarioActualId]="usuarioLogueadoId"
@@ -25,7 +25,7 @@
   }
 </div>
 
-@if (postsArray.length > 0 && !finDeRegistros) {
+@if (postsArray().length > 0 && !finDeRegistros) {
   <div class="flex justify-center pb-20">
     <button (click)="cargarMas()" class="bg-zinc-900/80 border border-emerald-500/30 text-emerald-400 text-xs px-6 py-2 rounded">
       Cargar más evidencias

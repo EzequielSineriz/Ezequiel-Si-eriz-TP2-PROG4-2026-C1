@@ -27,8 +27,11 @@ export class Usuario {
   @Prop()
   avatarUrl!: string; // URL de la imagen guardada
 
-  @Prop({ default: 'usuario', enum: ['usuario', 'administrador'] })
+  @Prop({ default: 'usuario', enum: ['usuario', 'admin'] })
   perfil!: string;
+
+  @Prop({ type: Boolean, default: true })
+  activo!: boolean;
 
   @Prop({ type: [{ type: Types.ObjectId, ref: 'Usuario' }], default: [] })
   seguidores!: Types.ObjectId[];

@@ -18,7 +18,8 @@ import { ComentarioModule } from './comentarios/comentario.module';
     UsuarioModule,
     AuthModule,
     PublicacionModule,
-    ComentarioModule
+    ComentarioModule,
+    UsuarioModule
   ],
   controllers: [AppController],
   providers: [AppService],

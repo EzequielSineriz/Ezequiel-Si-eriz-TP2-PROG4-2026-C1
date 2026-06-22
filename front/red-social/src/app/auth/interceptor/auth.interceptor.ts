@@ -6,14 +6,18 @@ import { AuthService } from '../services/auth.service';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  return next(req).pipe(
-    catchError((error: HttpErrorResponse) => {
-      // 🚨 Si el backend rechaza la petición por token vencido o alterado
-      if (error.status === 401) {
-        console.error('⚠️ Código 401: Token corrupto o expirado en el plano terrenal.');
-        authService.ForzarDestierro(); // Limpia el localStorage y redirige al login
+  // 🔮 Buscamos el token recién guardado en la señal reactiva
+  // Si tu login guarda todo en usuarioActual, extraelo de ahí:
+  const token = localStorage.getItem('paranormal_token');
+
+  if (token) {
+    // Clonamos la petición e inyectamos el Bearer que tu TokenGuard de NestJS espera
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
       }
-      return throwError(() => error);
-    })
-  );
+    });
+  }
+
+  return next(req);
 };
