@@ -1,10 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
 
 @Component({
   selector: 'app-aside-izquierdo',
-  imports: [RouterLink,RouterLinkActive],
+  imports: [RouterLink,RouterLinkActive, ImagenMediaPipe],
   templateUrl: './aside-izquierdo.html',
   styleUrl: './aside-izquierdo.css',
 })
