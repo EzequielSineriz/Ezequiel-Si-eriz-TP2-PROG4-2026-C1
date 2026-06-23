@@ -10,7 +10,7 @@ import { PublicacionesService } from '../../publicaciones/publicaciones.service'
   templateUrl: './feed.html',
   styleUrl: './feed.css',
 })
-export class Feed implements OnInit, OnDestroy {
+export class Feed implements OnInit, OnDestroy, AfterViewInit {
   private pubService = inject(PublicacionesService);
   public usuarioLogueadoId: string = '';
 
@@ -25,10 +25,25 @@ export class Feed implements OnInit, OnDestroy {
 
   private observador?: IntersectionObserver;
 
+  @ViewChild('reproductorLluvia') reproductorLluvia!: ElementRef<HTMLAudioElement>;
+
   @ViewChild('anclaReal') set mapearAncla(referencia: ElementRef | undefined) {
     if (referencia && this.observador) {
       this.observador.disconnect(); // Limpiamos rastros previos
       this.observador.observe(referencia.nativeElement); // Lo ponemos a escuchar
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.reproductorLluvia) {
+      const audio = this.reproductorLluvia.nativeElement;
+
+      audio.volume = 0.25;
+
+      // Intentamos reproducir de fondo
+      audio.play().catch(error => {
+        console.log('[AUDIO] El navegador bloqueó el autoplay. Esperando interacción...', error);
+      });
     }
   }
 
@@ -45,6 +60,9 @@ export class Feed implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     if (this.observador) {
       this.observador.disconnect();
+    }
+    if (this.reproductorLluvia) {
+      this.reproductorLluvia.nativeElement.pause();
     }
   }
 
