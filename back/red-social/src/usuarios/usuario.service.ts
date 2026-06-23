@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Usuario } from './usuario.schema';
 import * as bcrypt from 'bcrypt';
+import { UserAdminRegisterDto } from './dto/admin-create-user.dto';
 
 
 @Injectable()
@@ -15,7 +16,7 @@ constructor(@InjectModel('Usuario') private readonly usuarioModel: Model<Usuario
   }
 
   // 2. Crear un usuario desde el panel del admin (con rol configurable)
-  async crearUsuarioDesdeAdmin(datos: any): Promise<Usuario> {
+  async crearUsuarioDesdeAdmin(datos: UserAdminRegisterDto, avatarUrl?: string): Promise<Usuario> {
     const { email, nombreUsuario, password, perfil } = datos;
 
     // Validaciones básicas de unicidad
@@ -32,7 +33,8 @@ constructor(@InjectModel('Usuario') private readonly usuarioModel: Model<Usuario
     const nuevoUsuario = new this.usuarioModel({
       ...datos,
       password: hashedPassword,
-      perfil: perfil || 'usuario', // 'usuario' o 'administrador' que viaja desde el radio-button
+      avatarUrl: avatarUrl || '',
+      perfil: perfil || 'usuario', 
       activo: true
     });
 

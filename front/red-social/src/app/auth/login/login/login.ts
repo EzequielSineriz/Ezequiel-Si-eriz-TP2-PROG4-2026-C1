@@ -21,7 +21,7 @@ export class Login {
 
   public mutado = signal<boolean>(true);
 
-  // 🔮 Listado de investigadores autorizados (se inyectan directo en los inputs)
+
   public moderadores = [
     {
       inicial: 'A',
@@ -49,7 +49,7 @@ export class Login {
   public formulario: FormGroup = this.fb.group({
     loginIdentifier: ['', [
       Validators.required,
-      Validators.pattern(FormUtils.notOnlySpacesPattern)
+      Validators.pattern(/.*\S.*/)
     ]],
     password: ['', [
       Validators.required,

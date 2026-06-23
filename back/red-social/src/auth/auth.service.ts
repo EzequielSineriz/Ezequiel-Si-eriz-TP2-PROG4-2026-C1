@@ -49,7 +49,7 @@ export class AuthService {
 
     const token = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
       algorithm: 'HS256',
-      expiresIn: '15m', 
+      expiresIn: '30m', 
     });
 
     //  Devuelve los datos del usuario (o el token)
@@ -92,7 +92,7 @@ export class AuthService {
       throw new UnauthorizedException('Credenciales incorrectas.');
     }
 
-    // 3. Si es válido, generamos su token de acceso por 15 minutos
+    // 3. Si es válido, generamos su token de acceso por 30 minutos
     const payload = {
       _id: usuario._id.toString(),
       email: usuario.email,
@@ -102,7 +102,7 @@ export class AuthService {
 
     const token = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
       algorithm: 'HS256',
-      expiresIn: '15m',
+      expiresIn: '30m',
     });
 
     // Retornamos token y datos solicitados por la consigna
@@ -156,10 +156,10 @@ export class AuthService {
       perfil: perfil || 'usuario', // Mantiene el rol (Admin/Usuario) para el Sprint 4
     };
 
-    // Firmamos el token por 15 minutos exactos
+    // Firmamos el token por 30 minutos exactos
     const nuevoToken = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
       algorithm: 'HS256',
-      expiresIn: '15m',
+      expiresIn: '30m',
     });
 
     return { token: nuevoToken };

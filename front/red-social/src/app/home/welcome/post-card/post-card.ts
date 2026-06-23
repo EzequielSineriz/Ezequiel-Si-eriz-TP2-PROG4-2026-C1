@@ -9,7 +9,7 @@ import { PublicacionesService } from '../../publicaciones/publicaciones.service'
 @Component({
   selector: 'app-post-card',
   imports: [CommonModule],
-  templateUrl: './post-card.html',
+  templateUrl:'./post-card.html',
   styleUrl: './post-card.css',
 })
 export class PostCard {

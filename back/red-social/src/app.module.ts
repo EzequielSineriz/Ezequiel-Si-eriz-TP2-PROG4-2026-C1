@@ -8,6 +8,7 @@ import { UsuarioModule } from './usuarios/usuarios.module';
 import { AuthModule } from './auth/auth.module';
 import { PublicacionModule } from './publicaciones/publicacion.module';
 import { ComentarioModule } from './comentarios/comentario.module';
+import { EstadisticasModule } from './stats/estadisticas.module';
 
 @Module({
   imports: [MongooseModule.forRoot('mongodb+srv://ezequielsineriz_db_user:FpAhkyrpO0mddc5h@cluster0.k9mhhz0.mongodb.net/red-social?appName=Cluster0'),
@@ -19,7 +20,8 @@ import { ComentarioModule } from './comentarios/comentario.module';
     AuthModule,
     PublicacionModule,
     ComentarioModule,
-    UsuarioModule
+    UsuarioModule,
+    EstadisticasModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -89,11 +89,10 @@ export class AuthService {
 
   public get esAdmin(): boolean {
   const usuario = this.usuarioActual();
-    // Comprobamos si coincide con tu enum de la base de datos
     return usuario?.perfil === 'admin';
   }
 
-  // Agregar en el login para verificar si el usuario está activo o no
+
   public verificarEstadoActivo(usuario: any): boolean {
   if (usuario && usuario.activo === false) {
     this.mostrarAlertaGotica(
@@ -145,7 +144,7 @@ export class AuthService {
     return this.http
       .get<{ exists: boolean }>(`${this.apiUrl}/auth/check-email?email=${email}`)
       .pipe(
-        delay(500), // Un delay sutil de 500ms (¡no 2 segundos y medio!) para no saturar a peticiones mientras escribe
+        delay(500), // Un delay sutil de 500ms
         map((resp) => {
           // Si el backend dice que existe, retornamos el error para que Angular pinte el input de rojo
           return resp.exists ? { emailTaken: true } : null;
@@ -156,20 +155,17 @@ export class AuthService {
 
   iniciarContadorMaldito() {
     if (this.timerSesion) {
-      console.log('🔄 Reiniciando cronómetro espiritual anterior...');
       clearTimeout(this.timerSesion);
     }
 
-    console.log('⏳ El reloj de arena ha comenzado. Frecuencia sintonizada.');
-
     const tiempoEsperaPrueba = 10 * 10000;
-    const tiempoEsperaReal = 10 * 60 * 1000;
+    const tiempoEsperaReal = 30 * 60 * 1000;
 
-    //  A los 10 minutos (10 * 60 * 1000 ms) se manifiesta la advertencia
+    //  A los 30 minutos (30 * 60 * 1000 ms) se manifiesta la advertencia
     this.timerSesion = setTimeout(() => {
-      console.warn('⚠️ El contador llegó a los 10 segundos. Desplegando advertencia gótica...');
+
       this.mostrarModalExtensionSesion();
-    }, tiempoEsperaPrueba);
+    }, tiempoEsperaReal);
   }
 
   private mostrarModalExtensionSesion() {
@@ -187,7 +183,7 @@ export class AuthService {
       showCancelButton: true,
       background: '#0d0d0d',
       color: '#e0e0e0',
-      confirmButtonColor: '#10b981', // Verde esmeralda para aceptar
+      confirmButtonColor: '#10b981',
       cancelButtonColor: '#3f3f46',
       confirmButtonText: 'EXTENDER PERMANENCIA',
       cancelButtonText: 'ABANDONAR',
@@ -206,7 +202,7 @@ export class AuthService {
               toast: true,
               position: 'top-end',
               icon: 'success',
-              title: 'Vínculo renovado por 15 minutos más',
+              title: 'Vínculo renovado por 30 minutos más',
               showConfirmButton: false,
               timer: 3000,
               background: '#0d0d0d',
@@ -233,7 +229,7 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          // Guardamos el nuevo token de 15 minutos devuelto por NestJS
+          // Guardamos el nuevo token de 30 minutos devuelto por NestJS
           localStorage.setItem('paranormal_token', res.token);
           // Reiniciamos el reloj de arena
           this.iniciarContadorMaldito();
@@ -268,7 +264,7 @@ export class AuthService {
     });
 
     return this.http
-      .put(`http://localhost:3000/auth/usuarios/${id}/perfil`, formData, { headers })
+      .put(`${this.apiUrl}/auth/usuarios/${id}/perfil`, formData, { headers })
       .pipe(
         tap((usuarioActualizado: any) => {
           // 🔮 Sincronización crucial: actualizamos el LocalStorage y el Signal de la sesión global

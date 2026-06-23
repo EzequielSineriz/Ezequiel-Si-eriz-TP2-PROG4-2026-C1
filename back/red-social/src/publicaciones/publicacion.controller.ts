@@ -7,6 +7,7 @@ import {
   Post,
   Put,
   Req,
+  Query,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -63,8 +64,16 @@ export class PublicacionController {
   }
 
   @Get()
-  obtenerTodas() {
-    return this.publicacionService.obtenerTodas();
+  obtenerTodas(
+    @Query('sort') sort?: string,
+    @Query('limit') limit?: string,
+    @Query('offset') offset?: string,) {
+
+    const limiteNumerico = limit ? Number(limit) : 5;
+    const offsetNumerico = offset ? Number(offset) : 0;
+    
+    console.log(`[BACKEND CONTROLLER] Despachando Feed -> Orden: ${sort || 'fecha'}, Limit: ${limiteNumerico}, Offset: ${offsetNumerico}`);
+    return this.publicacionService.obtenerTodas(sort, limiteNumerico, offsetNumerico);
   }
 
   @Get('perfil/metricas')

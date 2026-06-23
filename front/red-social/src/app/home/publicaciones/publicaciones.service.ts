@@ -27,16 +27,20 @@ export class PublicacionesService {
 
   // GET: Listar con filtros y paginación
   obtenerPublicaciones(sort: 'fecha' | 'likes' = 'fecha', limit: number = 5, offset: number = 0): Observable<IPublicacion[]> {
-    const params = new HttpParams()
-      .set('sort', sort)
-      .set('limit', limit.toString())
-      .set('offset', offset.toString());
+  // Aseguramos matemáticamente que sean enteros limpios
+  const parseLimit = Math.floor(Number(limit)) || 5;
+  const parseOffset = Math.floor(Number(offset)) || 0;
 
-    return this.http.get<IPublicacion[]>(this.apiUrl, {
-      params,
-      headers: this.obtenerCabeceras()
-    });
-  }
+  const params = new HttpParams()
+    .set('sort', sort)
+    .set('limit', parseLimit.toString())
+    .set('offset', parseOffset.toString());
+
+  return this.http.get<IPublicacion[]>(`${this.apiUrl}`, {
+    params,
+    headers: this.obtenerCabeceras()
+  });
+}
 
   // POST: Crear publicación (Recibe FormData por la imagen)
   crearPublicacion(formData: FormData): Observable<IPublicacion> {

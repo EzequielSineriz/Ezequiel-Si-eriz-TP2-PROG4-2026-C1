@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { PostBox } from "../post-box/post-box";
 import { PostCard } from "../post-card/post-card";
 import { IPublicacion } from '../../publicaciones/publicaciones.interface';
@@ -10,51 +10,72 @@ import { PublicacionesService } from '../../publicaciones/publicaciones.service'
   templateUrl: './feed.html',
   styleUrl: './feed.css',
 })
-export class Feed implements OnInit {
-  // 🔮 Muro de pub licaciones del plano espectral (Tu array que usa el HTML)
+export class Feed implements OnInit, OnDestroy {
   private pubService = inject(PublicacionesService);
-  public usuarioLogueadoId: string = localStorage.getItem('paranormal_user') || '';
+  public usuarioLogueadoId: string = '';
 
-  // cambiar a signals
   public postsArray = signal<IPublicacion[]>([]);
   public criterioOrden: 'fecha' | 'likes' = 'fecha';
 
-  // Paginación
+  // Paginación y control de carga
   public limite: number = 5;
   public offset: number = 0;
   public finDeRegistros: boolean = false;
+  public cargando: boolean = false; // 👈 Evita peticiones simultáneas idénticas
 
+  private observador?: IntersectionObserver;
 
-  ngOnInit(): void {
-    // 1. Primero, de forma obligatoria y síncrona, capturamos el ID de sesión
-  const userJson = localStorage.getItem('paranormal_user');
-  if (userJson) {
-    this.usuarioLogueadoId = JSON.parse(userJson)._id;
-  } else {
-    this.usuarioLogueadoId = '';
+  @ViewChild('anclaReal') set mapearAncla(referencia: ElementRef | undefined) {
+    if (referencia && this.observador) {
+      this.observador.disconnect(); // Limpiamos rastros previos
+      this.observador.observe(referencia.nativeElement); // Lo ponemos a escuchar
+    }
   }
 
-  // 2. Recién ahora, con el ID asegurado en memoria, levantamos los reportes
-  this.cargarPublicaciones();
+  ngOnInit(): void {
+    const userJson = localStorage.getItem('paranormal_user');
+    if (userJson) {
+      this.usuarioLogueadoId = JSON.parse(userJson)._id;
+    }
+
+    this.cargarPublicaciones();
+    this.crearInfiniteScroll();
+  }
+
+  ngOnDestroy(): void {
+    if (this.observador) {
+      this.observador.disconnect();
+    }
   }
 
   cargarPublicaciones(append: boolean = false) {
+    if (this.cargando) return; // Si ya hay una consulta en viaje, frena
+    this.cargando = true;
+
     this.pubService.obtenerPublicaciones(this.criterioOrden, this.limite, this.offset)
       .subscribe({
         next: (nuevosPosts) => {
+          // Si el backend trae menos de lo pedido, tocamos fondo
           if (nuevosPosts.length < this.limite) {
             this.finDeRegistros = true;
           }
 
           if (append) {
-            // 👈 .update() nos da el estado anterior para fusionarlo con el nuevo
-            this.postsArray.update(posts => [...posts, ...nuevosPosts]);
+            this.postsArray.update(posts => {
+              // 🛡️ Filtro de seguridad anti-duplicados para evitar crash NG0955
+              const idsExistentes = new Set(posts.map(p => p._id));
+              const filtrados = nuevosPosts.filter(p => !idsExistentes.has(p._id));
+              return [...posts, ...filtrados];
+            });
           } else {
-            // 👈 .set() reemplaza por completo el valor de la Signal
             this.postsArray.set(nuevosPosts);
           }
+          this.cargando = false;
         },
-        error: (err) => console.error('Error trayendo reportes del más allá:', err)
+        error: (err) => {
+          console.error('Error trayendo reportes:', err);
+          this.cargando = false;
+        }
       });
   }
 
@@ -63,66 +84,51 @@ export class Feed implements OnInit {
     this.criterioOrden = nuevoOrden;
     this.offset = 0;
     this.finDeRegistros = false;
-    this.cargarPublicaciones();
+    this.cargarPublicaciones(false);
   }
 
-  cargarMas() {
-    this.offset += this.limite;
-    this.cargarPublicaciones(true);
-  }
-
-  // El PostBox ahora emite FormData
- agregarNuevoPost(formData: FormData) {
-  this.pubService.crearPublicacion(formData).subscribe({
-    next: (postCreado) => {
-      // 🔮 Recuperamos los datos del usuario actual guardados en la sesión
-      // Podés usar tu authService o el localStorage si guardaste ahí el objeto
-      const datosUsuario = localStorage.getItem('paranormal_user');
-
-      if (datosUsuario) {
-        const usuario = JSON.parse(datosUsuario);
-
-        // Populamos el autorId en el Front temporalmente para que la tarjeta se renderice perfecta al instante
-        postCreado.autorId = {
-          _id: usuario._id || this.usuarioLogueadoId,
-          nombre: usuario.nombre || 'Tu Nombre',
-          apellido: usuario.apellido || 'Tu Apellido',
-          nombreUsuario: usuario.nombreUsuario || 'Tu Usuario',
-          avatarUrl: usuario.avatarUrl || ''
-        };
+  crearInfiniteScroll() {
+    this.observador = new IntersectionObserver((entries) => {
+      // Si el ancla entra en pantalla, no es el fin de los registros, y no estamos cargando ya una consulta...
+      if (entries[0].isIntersecting && !this.finDeRegistros && !this.cargando && this.postsArray().length > 0) {
+        console.log('[INFINITE SCROLL] Cargando más publicaciones... Offset actual:', this.offset + this.limite);
+        this.offset += this.limite;
+        this.cargarPublicaciones(true);
       }
+    }, { rootMargin: '150px' }); // Pide datos 150px antes de llegar al límite visual
+  }
 
-      // Se añade inmediatamente arriba en la UI y Angular detecta el cambio de inmediato
-      this.postsArray.update(posts => [postCreado, ...posts]);
-    },
-    error: (err) => console.error('Error al archivar la evidencia:', err)
-  });
-}
 
-  // Manejadores de acciones que vienen desde los PostCards
+  agregarNuevoPost(formData: FormData) {
+    this.pubService.crearPublicacion(formData).subscribe({
+      next: (postCreado) => {
+        const datosUsuario = localStorage.getItem('paranormal_user');
+        if (datosUsuario) {
+          const usuario = JSON.parse(datosUsuario);
+          postCreado.autorId = {
+            ...usuario,
+            _id: usuario._id || this.usuarioLogueadoId,
+          };
+        }
+        this.postsArray.update(posts => [postCreado, ...posts]);
+      },
+      error: (err) => console.error('Error al archivar la evidencia:', err)
+    });
+  }
+
   onEliminarPost(id: string) {
     this.pubService.eliminarPublicacion(id).subscribe({
-    next: () => {
-      // Si el plano astral del backend confirma el borrado, lo sacamos de la UI al instante
-      this.postsArray.update(posts => posts.filter(p => p._id !== id));
-    },
-    error: (err) => {
-      console.error('El ritual de eliminación falló en el servidor:', err);
-    }
-  });
+      next: () => this.postsArray.update(posts => posts.filter(p => p._id !== id)),
+      error: (err) => console.error('Fallo ritual de eliminación:', err)
+    });
   }
 
   onToggleLike(post: IPublicacion) {
-  const yaTieneLike = post.usuariosQueDieronLike.includes(this.usuarioLogueadoId);
-
-  // Como en tu backend unificamos todo en un único endpoint 'darLike' que hace toggle automático,
-  // le pegamos directo a darLike pasándole el ID.
-  this.pubService.darLike(post._id).subscribe({
-    next: (postActualizado) => {
-      // 🔥 Mapeamos creando un array completamente nuevo para forzar la reactividad de la UI
-      this.postsArray.update(posts => posts.map(p => p._id === postActualizado._id ? postActualizado : p));
-    },
-    error: (err) => console.error('Error al tramitar el me gusta:', err)
-  });
-}
+    this.pubService.darLike(post._id).subscribe({
+      next: (postActualizado) => {
+        this.postsArray.update(posts => posts.map(p => p._id === postActualizado._id ? postActualizado : p));
+      },
+      error: (err) => console.error('Error al tramitar me gusta:', err)
+    });
+  }
 }

@@ -1,9 +1,9 @@
 <div class="sticky top-0 bg-black/60 backdrop-blur-md border-b border-white/10 p-4 z-20 flex justify-between items-center">
-  <h2 class="text-lg font-bold tracking-wider uppercase text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)]">
+  <h2 class="text-lg font-bold tracking-wider uppercase text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.3)] font-logo">
     Línea del Tiempo Oculta
   </h2>
 
-  <div class="flex gap-2 text-xs">
+  <div class="flex gap-2 text-xs font-mono">
     <button (click)="cambiarOrden('fecha')" [class]="criterioOrden === 'fecha' ? 'text-emerald-400 font-bold border-b border-emerald-400' : 'text-gray-400' ">Recientes</button>
     <span class="text-white/20">|</span>
     <button (click)="cambiarOrden('likes')" [class]="criterioOrden === 'likes' ? 'text-emerald-400 font-bold border-b border-emerald-400' : 'text-gray-400' ">Populares</button>
@@ -12,7 +12,7 @@
 
 <app-post-box (onNuevoPost)="agregarNuevoPost($event)"></app-post-box>
 
-<div class="divide-y divide-white/10 pb-20">
+<div class="divide-y divide-white/10">
   @for (item of postsArray(); track item._id) {
     <app-post-card
       [post]="item"
@@ -21,14 +21,25 @@
       (onDelete)="onEliminarPost(item._id)">
     </app-post-card>
   } @empty {
-    <p class="text-center text-xs text-gray-500 py-10 uppercase tracking-widest">No hay actividad en este plano espectral...</p>
+    @if (!cargando) {
+      <p class="text-center text-xs text-gray-500 py-10 uppercase tracking-widest font-mono">No hay actividad en este plano espectral...</p>
+    }
   }
 </div>
 
-@if (postsArray().length > 0 && !finDeRegistros) {
-  <div class="flex justify-center pb-20">
-    <button (click)="cargarMas()" class="bg-zinc-900/80 border border-emerald-500/30 text-emerald-400 text-xs px-6 py-2 rounded">
-      Cargar más evidencias
-    </button>
-  </div>
-}
+<div class="w-full flex justify-center pt-8 pb-12 mt-10 transition-all">
+  @if (cargando) {
+    <div class="flex items-center gap-2 text-[12px] font-mono uppercase text-emerald-500 tracking-[0.2em] animate-pulse">
+      <span class="w-2 h-2 rounded-full bg-blue-500 animate-ping"></span>
+      Rastreando nuevas evidencias espectrales...
+    </div>
+  }
+
+  @if (finDeRegistros && postsArray().length > 0) {
+    <div class="text-[14px] font-mono uppercase text-red-700 tracking-widest border-t border-white/5 pt-4 px-6 w-full text-center">
+      —— Fin del hilo de Publicaciones. ——
+    </div>
+  }
+</div>
+
+<div #anclaReal class="h-4 w-full invisible pb-24"></div>

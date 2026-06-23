@@ -1,0 +1,117 @@
+<div class="sticky top-0 bg-black/80 backdrop-blur-md border-b border-white/10 p-5 z-20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+  <div>
+    <h2 class="text-base font-bold tracking-widest uppercase text-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.3)] font-logo">
+      📊 Analítica de Frecuencias Espectrales
+    </h2>
+    <p class="text-[10px] text-gray-500 uppercase tracking-wider mt-0.5">Monitoreo y Auditoría del Nexo Central</p>
+  </div>
+
+  <button (click)="limpiarFiltros()"
+            class="w-full h-9.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-white/5 font-mono text-xs rounded-md uppercase tracking-wider transition-all duration-200">
+      Resetear Filtros
+    </button>
+</div>
+
+<div class="p-5 flex flex-col gap-4">
+
+  <div class="bg-zinc-950/90 border border-cyan-500/20 rounded-xl p-4 flex flex-col md:flex-row items-stretch md:items-center gap-4 shadow-xl w-full">
+    <div class="flex-1 flex flex-col gap-1.5">
+      <label class="text-[10px] uppercase font-bold tracking-wider text-cyan-400 font-mono">Filtro de Identidad</label>
+      <div class="relative flex items-center w-full">
+        <input type="text" [ngModel]="busquedaAlias()" (ngModelChange)="busquedaAlias.set($any($event))" (keyup.enter)="ejecutarBusquedaPorAlias()"
+               placeholder="Escribir alias a buscar..."
+               class="w-full bg-black border border-white/10 rounded-l-md px-3 py-2 text-xs text-gray-200 font-mono placeholder-gray-600 focus:outline-none focus:border-cyan-500 transition-colors">
+        <button (click)="ejecutarBusquedaPorAlias()"
+                class="bg-cyan-950/40 border-y border-r border-white/10 hover:bg-cyan-500 hover:text-black text-cyan-400 px-4 py-2 rounded-r-md transition-all cursor-pointer flex items-center justify-center text-xs font-bold">
+          Buscar
+        </button>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-1.5">
+      <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Filtrar por Entidad</label>
+      <select [ngModel]="usuarioSeleccionado()" (ngModelChange)="actualizarCampo('usuario', $event)"
+              class="w-full bg-black border border-white/10 rounded-md px-3 py-2 text-xs text-gray-300 font-mono focus:outline-none focus:border-cyan-500 cursor-pointer h-[38px]">
+        <option value="">🔮 [ Todos los Usuarios ]</option>
+        @for (user of usuariosFiltrados(); track user._id) {
+          <option [value]="user._id">&#64;{{ user.nombreUsuario }} ({{ user.nombre }})</option>
+        }
+      </select>
+    </div>
+  </div>
+
+
+
+  <div class="flex flex-col gap-1.5">
+    <label class="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Lapso Temporal</label>
+    <select [ngModel]="periodoSeleccionado()" (ngModelChange)="actualizarCampo('periodo', $event)"
+            class="w-full bg-black border border-white/10 rounded-md px-3 py-2 text-xs text-zinc-300 font-mono focus:outline-none focus:border-red-500 cursor-pointer h-[38px]">
+      <option value="semana">📅 Última Semana</option>
+      <option value="mes">📅 Último Mes</option>
+      <option value="anio">📅 Último Año</option>
+      <option value="historico">🌌 Histórico Completo</option>
+    </select>
+  </div>
+
+</div>
+
+<div class="mx-5 mb-2 px-4 py-2.5 bg-gradient-to-r from-zinc-950 to-transparent border-l-2 border-cyan-500 text-xs font-mono uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+  <span>Registros de:</span>
+  <span class="text-cyan-400 font-bold drop-shadow-[0_0_5px_rgba(6,182,212,0.4)]">
+    {{ obtenerNombreUsuarioAuditado() }}
+  </span>
+</div>
+
+<div class="p-5 pb-24 flex flex-col gap-6">
+  @if (cargando()) {
+    <div class="text-center py-20">
+      <span class="text-xs font-mono uppercase text-red-500 tracking-[0.3em] animate-pulse">
+        [ CANALIZANDO FLUJOS DE INFORMACIÓN... ]
+      </span>
+    </div>
+  } @else {
+
+    @if (barChartData.labels && barChartData.labels.length === 0) {
+      <div class="p-10 bg-zinc-950/40 border border-red-900/30 rounded-xl backdrop-blur-md shadow-xl text-center flex flex-col items-center justify-center min-h-[300px] max-w-2xl mx-auto w-full group">
+        <div class="w-12 h-12 rounded-full bg-red-950/30 border border-red-500/30 flex items-center justify-center text-red-500 text-xl mb-4 animate-pulse group-hover:border-red-500 transition-colors">
+          📡
+        </div>
+        <h4 class="text-xs font-bold font-mono uppercase tracking-[0.2em] text-red-400 mb-1">
+          Sin Registros Espectrales
+        </h4>
+        <p class="text-[10px] text-zinc-500 uppercase tracking-wider max-w-sm font-mono leading-relaxed">
+          No se detectaron fluctuaciones, publicaciones ni comentarios en este nexo para el lapso de tiempo seleccionado.
+        </p>
+      </div>
+    } @else {
+
+      <div class="p-6 bg-black/40 border border-white/10 rounded-xl backdrop-blur-md shadow-xl flex flex-col justify-between w-full min-h-[380px]">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-300 mb-4 border-b border-white/5 pb-2">
+          🩸 Publicaciones Invocadas por Usuario
+        </h3>
+        <div class="w-full h-full">
+          <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'"></canvas>
+        </div>
+      </div>
+
+      <div class="p-6 bg-black/40 border border-white/10 rounded-xl backdrop-blur-md shadow-xl flex flex-col justify-between w-full min-h-[380px]">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-cyan-400 mb-4 border-b border-white/5 pb-2">
+          📐 Pirámide de Fluctuación Temporal de Comentarios (Últimos Meses)
+        </h3>
+        <div class="w-full h-full">
+          <canvas baseChart [data]="lineChartData" [options]="piramideChartOptions" [type]="'bar'"></canvas>
+        </div>
+      </div>
+
+      <div class="p-6 bg-black/40 border border-white/10 rounded-xl backdrop-blur-md shadow-xl max-w-3xl mx-auto w-full">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-yellow-500 mb-4 border-b border-white/5 pb-2 text-center">
+          🍕 Concentración de Ectoplasma (Comentarios por Post)
+        </h3>
+        <div class="w-full max-w-md mx-auto">
+          <canvas baseChart [data]="pieChartData" [options]="pieChartOptions" [type]="'pie'"></canvas>
+        </div>
+      </div>
+
+    }
+  }
+</div>

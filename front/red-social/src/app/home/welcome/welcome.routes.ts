@@ -25,12 +25,12 @@ export const welcomeRoutes: Routes = [
         path: 'dashboard/usuarios',
         canActivate: [adminGuard],
         loadComponent: () => import('../usuarios/dashboard.usuarios').then((m) => m.DashboardUsuarios),
-      },/*
+      },
       {
         path: 'dashboard/estadisticas',
         canActivate: [adminGuard],
-        loadComponent: () => import('./dashboard/estadisticas/estadisticas').then((m) => m.DashboardEstadisticas),
-      }*/
+        loadComponent: () => import('../estadisticas/estadisticas').then((m) => m.Estadisticas),
+      }
     ]
   }
 ];
