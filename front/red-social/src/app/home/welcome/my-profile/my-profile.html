@@ -6,8 +6,8 @@
         <div class="flex gap-4 items-center">
 
           <div class="relative group w-16 h-16 rounded-full border-2 border-emerald-500/30 bg-zinc-900 flex items-center justify-center overflow-hidden">
-            @if (currentUser.avatarUrl || currentUser.avatarUrl) {
-              <img [src]="'http://localhost:3000' + (currentUser.avatarUrl || currentUser.avatarUrl)" class="w-full h-full object-cover" alt="Avatar">
+            @if (currentUser?.avatarUrl) {
+              <img [src]="currentUser!.avatarUrl | imagenMedia"class="w-full h-full object-cover" alt="Avatar">
             } @else {
               <span class="text-2xl">👁️</span>
             }

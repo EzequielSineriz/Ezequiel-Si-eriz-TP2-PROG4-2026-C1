@@ -6,10 +6,11 @@ import { PublicacionesService } from '../../publicaciones/publicaciones.service'
 import { PostCard } from "../post-card/post-card";
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
+import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
 
 @Component({
   selector: 'app-my-profile',
-  imports: [CommonModule, PostCard,FormsModule],
+  imports: [CommonModule, PostCard,FormsModule, ImagenMediaPipe],
   templateUrl: './my-profile.html',
   styleUrl: './my-profile.css',
 })
