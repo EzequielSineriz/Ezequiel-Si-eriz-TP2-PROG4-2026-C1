@@ -11,6 +11,13 @@ Desarrollado como proyecto integrador final de desarrollo de software para la **
 
 ---
 
+## 👤 Autor
+
+* **Braian Ezequiel Sineriz** - *Desarrollador Full-Stack* - [Tu GitHub](https://github.com/ezequiel-sineriz
+  )
+
+Proyecto integrador final de desarrollo de software desarrollado para la **Universidad Tecnológica Nacional (UTN)**.
+
 ## 🌌 Demostración y Deploys
 
 * **Sitio En Vivo (Frontend):** [Link a tu deploy en Vercel/Hostinger]
