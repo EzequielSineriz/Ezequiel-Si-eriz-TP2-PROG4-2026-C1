@@ -40,8 +40,8 @@ export class Login {
     {
       inicial: 'W',
       username: 'NDIEZ-UTN',
-      email: 'ndiez@utn.com',
-      pass: 'investigacion2026',
+      email: 'NataliaUtn',
+      pass: 'Abc12345',
       colorClass: 'border-pink-500 text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] shadow-pink-950'
     }
   ];
