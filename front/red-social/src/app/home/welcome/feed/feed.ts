@@ -57,13 +57,12 @@ export class Feed implements OnInit, OnDestroy {
 
 
   cargarPublicaciones(append: boolean = false) {
-    if (this.cargando) return; // Si ya hay una consulta en viaje, frena
+    if (this.cargando) return;
     this.cargando = true;
 
     this.pubService.obtenerPublicaciones(this.criterioOrden, this.limite, this.offset)
       .subscribe({
         next: (nuevosPosts) => {
-          // Si el backend trae menos de lo pedido, tocamos fondo
           if (nuevosPosts.length < this.limite) {
             this.finDeRegistros = true;
           }
