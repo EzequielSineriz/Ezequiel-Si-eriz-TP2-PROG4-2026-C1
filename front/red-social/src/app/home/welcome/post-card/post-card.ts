@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, input, Output } from '@angular/core';
 import { IPublicacion } from '../../publicaciones/publicaciones.interface';
 import Swal from 'sweetalert2';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { PublicacionesService } from '../../publicaciones/publicaciones.service';
+import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
 
 @Component({
   selector: 'app-post-card',
-  imports: [CommonModule],
+  imports: [CommonModule, ImagenMediaPipe],
   templateUrl:'./post-card.html',
   styleUrl: './post-card.css',
 })

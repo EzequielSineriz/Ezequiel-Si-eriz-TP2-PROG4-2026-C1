@@ -44,46 +44,42 @@
       {{ post.contenido }}
     </p>
 
-    @if (post.imagenUrl) {
-      <div class="mt-3 rounded-lg overflow-hidden border border-white/5 max-h-80 w-full bg-black/20">
-        <img [src]="'http://localhost:3000' + post.imagenUrl"
-             class="w-full max-h-80 object-cover"
-             alt="Evidencia Paranormal" />
-      </div>
-    }
+            @if (post.imagenUrl) {
+          <div class="rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-80 mb-3">
+            <img [src]="post.imagenUrl! | imagenMedia" class="w-full object-cover" alt="Evidencia" />
+          </div>
+        }
 
-    <div class="flex justify-between items-center text-xs text-gray-500 pt-2 w-full border-t border-white/5">
+    <div class="flex justify-between items-center text-xs text-gray-500 pt-2 w-full border-t border-white/5 no-redirect"> <div class="flex gap-4">
+    <span class="hover:text-emerald-400 cursor-pointer flex items-center gap-1 transition-colors">
+      💬 {{ post.comentarios?.length || 0 }}
+    </span>
 
-      <div class="flex gap-4">
-        <span class="hover:text-emerald-400 cursor-pointer flex items-center gap-1 transition-colors">
-          💬 {{ post.comentarios.length || 0 }}
-        </span>
+    <span
+      (click)="$event.stopPropagation(); onLike.emit()"
+      [class.text-rose-500]="leDioLike"
+      class="hover:text-rose-500 cursor-pointer flex items-center gap-1 transition-colors">
+      {{ leDioLike ? '❤️' : '🖤' }} {{ post.likes }}
+    </span>
+  </div>
 
-        <span
-          (click)="$event.stopPropagation(); onLike.emit()"
-          [class.text-rose-500]="leDioLike"
-          class="hover:text-rose-500 cursor-pointer flex items-center gap-1 transition-colors">
-          {{ leDioLike ? '❤️' : '🖤' }} {{ post.likes }}
-        </span>
-      </div>
-
-      @if (authService.esAdmin) {
+  @if (authService.esAdmin) {
     <button (click)="$event.stopPropagation(); confirmarPurgaPublicacion()"
             class="text-[10px] bg-blood/20 text-blood hover:bg-blood hover:text-white px-3 py-1.5 rounded uppercase font-black tracking-widest transition-all cursor-pointer">
       ☠️ Archivar Registro
     </button>
   }
 
-      @if (esMiPost) {
-        <button
-          (click)="$event.stopPropagation(); confirmarEliminacion()"
-          class="text-gray-600 hover:text-red-500 cursor-pointer transition-colors text-sm font-bold bg-transparent border-none p-1"
-          title="Eliminar del plano terrenal">
-          🗑️
-        </button>
-      }
+  @if (esMiPost) {
+    <button
+      (click)="$event.stopPropagation(); confirmarEliminacion()"
+      class="text-gray-600 hover:text-red-500 cursor-pointer transition-colors text-sm font-bold bg-transparent border-none p-1"
+      title="Eliminar del plano terrenal">
+      🗑️
+    </button>
+  }
 
-    </div>
+</div>
 
   </div>
 </article>
