@@ -17,6 +17,8 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
   public postsArray = signal<IPublicacion[]>([]);
   public criterioOrden: 'fecha' | 'likes' = 'fecha';
 
+
+  public audioMutado = signal<boolean>(false);
   // Paginación y control de carga
   public limite: number = 5;
   public offset: number = 0;
@@ -38,7 +40,7 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
     if (this.reproductorLluvia) {
       const audio = this.reproductorLluvia.nativeElement;
 
-      audio.volume = 0.25;
+      audio.volume = 0.15;
 
       // Intentamos reproducir de fondo
       audio.play().catch(error => {
@@ -64,6 +66,18 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
     if (this.reproductorLluvia) {
       this.reproductorLluvia.nativeElement.pause();
     }
+  }
+
+  alternarSilencioAudio(): void {
+    if (!this.reproductorLluvia) return;
+
+    const audio = this.reproductorLluvia.nativeElement;
+
+    // Invertimos el estado del signal
+    this.audioMutado.update(estado => !estado);
+
+    // Aplicamos el mute nativo del elemento HTML
+    audio.muted = this.audioMutado();
   }
 
   cargarPublicaciones(append: boolean = false) {

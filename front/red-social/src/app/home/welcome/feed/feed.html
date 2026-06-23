@@ -16,6 +16,22 @@
        preload="auto">
 </audio>
 
+<button (click)="alternarSilencioAudio()"
+        class="fixed bottom-6 right-6 z-50 p-3 bg-black/60 backdrop-blur-md border rounded-full transition-all duration-300 cursor-pointer flex items-center justify-center shadow-[0_0_10px_rgba(16,185,129,0.1)] group"
+        [class.border-emerald-500/30]="!audioMutado()"
+        [class.text-emerald-400]="!audioMutado()"
+        [class.hover:shadow-[0_0_12px_rgba(16,185,129,0.3)]]="!audioMutado()"
+        [class.border-red-900/40]="audioMutado()"
+        [class.text-gray-500]="audioMutado()"
+        [title]="audioMutado() ? 'Sintonizar frecuencia ambiental' : 'Aislar ruido blanco'">
+
+  @if (audioMutado()) {
+    <span class="text-sm font-mono tracking-widest text-red-500/80 animate-pulse group-hover:scale-110 transition-transform">🔇</span>
+  } @else {
+    <span class="text-sm font-mono tracking-widest text-emerald-400 group-hover:scale-110 transition-transform">🌧️</span>
+  }
+</button>
+
 <app-post-box (onNuevoPost)="agregarNuevoPost($event)"></app-post-box>
 
 <div class="divide-y divide-white/10">
