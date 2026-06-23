@@ -19,8 +19,8 @@ Proyecto integrador final de desarrollo de software desarrollado para la **Unive
 
 ## 🌌 Demostración y Deploys
 
-* **Sitio En Vivo (Frontend):** [Link a tu deploy en Vercel/Hostinger]
-* **API Endpoint (Backend):** [Link a tu API en Render]
+* **Sitio En Vivo (Frontend):** [Link a tu deploy en Vercel/Hostinger](https://red-social-front-swart.vercel.app/auth/login]
+* **API Endpoint (Backend):** [https://ezequiel-si-eriz-tp2-prog4-2026-c1.onrender.com]
 * **Video de Recorrido (Opcional):** [Link a Loom o YouTube]
 
 ---
