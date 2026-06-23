@@ -23,7 +23,7 @@
 
         @if (post()!.imagenUrl) {
           <div class="rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-80 mb-3">
-            <img [src]="'http://localhost:3000' + post()!.imagenUrl" class="w-full object-cover" alt="Evidencia" />
+            <img [src]="post()!.imagenUrl! | imagenMedia" class="w-full object-cover" alt="Evidencia" />
           </div>
         }
 

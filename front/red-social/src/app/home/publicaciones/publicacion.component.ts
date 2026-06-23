@@ -9,11 +9,12 @@ import { ComentariosService } from './comentarios/comentarios.service';
 import { IPublicacion } from './publicaciones.interface';
 import { PublicacionesService } from './publicaciones.service';
 import { AuthService } from '../../auth/services/auth.service';
+import { ImagenMediaPipe } from '../../utils/imagen.media.pipe';
 
 @Component({
   selector: 'app-publicacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, EspectroComentariosPipe],
+  imports: [CommonModule, FormsModule, RouterLink, EspectroComentariosPipe, ImagenMediaPipe],
   templateUrl: './publicacion.component.html',
 })
 export class DetallePublicacionComponent implements OnInit {
