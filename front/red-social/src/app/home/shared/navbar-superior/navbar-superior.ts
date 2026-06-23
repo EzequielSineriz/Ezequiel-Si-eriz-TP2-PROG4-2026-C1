@@ -1,9 +1,10 @@
 import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
+import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
 
 @Component({
   selector: 'app-navbar-superior',
-  imports: [],
+  imports: [ImagenMediaPipe],
   templateUrl: './navbar-superior.html',
   styleUrl: './navbar-superior.css',
 })
