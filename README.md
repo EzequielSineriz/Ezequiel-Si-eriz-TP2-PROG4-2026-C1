@@ -52,7 +52,6 @@ El proyecto se encuentra dividido de manera limpia en dos repositorios independi
 * **Interacciones:** Sistema atómico de dar/quitar *Me gusta* (1 por usuario) y control estricto de borrado (Baja Lógica) protegido por políticas del creador o rol de Administrador.
 
 ### 💬 3. Hilos de Conversación y Portabilidad
-* **Comentarios Paginados:** Visualización cronológica inversa con botón expandible de "Cargar más".
 * **Auditoría de Edición:** Capacidad de modificar comentarios en caliente, actualizando el estado visual del componente con la etiqueta `(editado)` mediante el atributo dinámico `modificado: true`.
 * **Marcadores y Compartir:** Módulo dedicado para guardar posts favoritos en la sección personal y un sistema de mensajería interna para "compartir" expedientes enviando la publicación directamente al feed de otro investigador.
 
