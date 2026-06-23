@@ -27,6 +27,9 @@
           </div>
         }
 
+
+        <!-- Aca se utiliza 1 pipe de comentarios-->
+
         <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex gap-6 items-center">
           <span class="flex items-center gap-1.5">
             💬 {{ post()!.comentarios | espectroComentarios }}
@@ -137,7 +140,7 @@
           </div>
         </div>
       } @empty {
-        <div class="p-8 text-center text-xs text-gray-600 uppercase tracking-widest bg-black/10">
+        <div class="p-8 text-center text-xs text-red-700 uppercase tracking-widest bg-black/10">
           Silencio absoluto en este plano terrenal...
         </div>
       }

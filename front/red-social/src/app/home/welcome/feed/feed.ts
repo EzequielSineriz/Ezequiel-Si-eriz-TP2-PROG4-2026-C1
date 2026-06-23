@@ -10,7 +10,7 @@ import { PublicacionesService } from '../../publicaciones/publicaciones.service'
   templateUrl: './feed.html',
   styleUrl: './feed.css',
 })
-export class Feed implements OnInit, OnDestroy, AfterViewInit {
+export class Feed implements OnInit, OnDestroy {
   private pubService = inject(PublicacionesService);
   public usuarioLogueadoId: string = '';
 
@@ -18,7 +18,6 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
   public criterioOrden: 'fecha' | 'likes' = 'fecha';
 
 
-  public audioMutado = signal<boolean>(false);
   // Paginación y control de carga
   public limite: number = 5;
   public offset: number = 0;
@@ -36,18 +35,7 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  ngAfterViewInit(): void {
-    if (this.reproductorLluvia) {
-      const audio = this.reproductorLluvia.nativeElement;
 
-      audio.volume = 0.15;
-
-      // Intentamos reproducir de fondo
-      audio.play().catch(error => {
-        console.log('[AUDIO] El navegador bloqueó el autoplay. Esperando interacción...', error);
-      });
-    }
-  }
 
   ngOnInit(): void {
     const userJson = localStorage.getItem('paranormal_user');
@@ -63,22 +51,10 @@ export class Feed implements OnInit, OnDestroy, AfterViewInit {
     if (this.observador) {
       this.observador.disconnect();
     }
-    if (this.reproductorLluvia) {
-      this.reproductorLluvia.nativeElement.pause();
-    }
+
   }
 
-  alternarSilencioAudio(): void {
-    if (!this.reproductorLluvia) return;
 
-    const audio = this.reproductorLluvia.nativeElement;
-
-    // Invertimos el estado del signal
-    this.audioMutado.update(estado => !estado);
-
-    // Aplicamos el mute nativo del elemento HTML
-    audio.muted = this.audioMutado();
-  }
 
   cargarPublicaciones(append: boolean = false) {
     if (this.cargando) return; // Si ya hay una consulta en viaje, frena
