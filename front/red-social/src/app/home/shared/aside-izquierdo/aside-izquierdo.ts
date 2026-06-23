@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
@@ -9,7 +9,7 @@ import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
   templateUrl: './aside-izquierdo.html',
   styleUrl: './aside-izquierdo.css',
 })
-export class AsideIzquierdo {
+export class AsideIzquierdo implements AfterViewInit {
   public menuItems = [
     { icon: 'bi bi-house-door-fill', label: 'Inicio', active: true },
     { icon: 'bi bi-hash', label: 'Explorar', active: false },
@@ -21,9 +21,32 @@ export class AsideIzquierdo {
 
   public authService = inject(AuthService);
 
+  public audioMutado = signal<boolean>(false);
+
+  @ViewChild('reproductorLluvia') reproductorLluvia!: ElementRef<HTMLAudioElement>;
+
   get currentUser() {
     const rawUser = this.authService.usuarioActual();
     if (!rawUser) return null;
     return rawUser.user ? rawUser.user : rawUser;
   }
+
+  ngAfterViewInit(): void {
+    if (this.reproductorLluvia) {
+      const audio = this.reproductorLluvia.nativeElement;
+      audio.volume = 0.15; // Mantener volumen sutil de fondo
+      audio.play().catch(error => {
+        console.log('[AUDIO] Autoplay bloqueado por políticas del navegador.', error);
+      });
+    }
+  }
+
+  alternarSilencioAudio(): void {
+    if (!this.reproductorLluvia) return;
+    const audio = this.reproductorLluvia.nativeElement;
+    this.audioMutado.update(estado => !estado);
+    audio.muted = this.audioMutado();
+  }
+
+
 }
