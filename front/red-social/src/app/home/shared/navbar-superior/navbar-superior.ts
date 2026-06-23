@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
 import { RouterLink } from '@angular/router';
+import { GlowNeon } from '../../../utils/directives/glow-neon';
 
 @Component({
   selector: 'app-navbar-superior',
-  imports: [ImagenMediaPipe,RouterLink],
+  imports: [ImagenMediaPipe,RouterLink, GlowNeon],
   templateUrl: './navbar-superior.html',
   styleUrl: './navbar-superior.css',
 })
