@@ -85,3 +85,55 @@ Para potenciar la modularidad del código y evitar dependencias de terceros inne
 1. Navegá a la carpeta del servidor:
    ```bash
    cd backend
+   npm install
+
+   '''
+2)Creá un archivo .env en la raíz de la carpeta backend siguiendo este esquema:
+
+   ```bash
+   PORT=3000
+   MONGO_URI=mongodb+srv://<usuario>:<password>@cluster.mongodb.net/paranormalDB
+   JWT_SECRET=TuPalabraSecretaDelPlanoAstralUltraSegura
+```
+3)Inicia el servidor en modo desarrollo
+   ```bash
+npm run start:dev
+```
+
+
+## 💻 Configuración de la Interfaz (Frontend)
+
+1)Navegá a la carpeta del cliente:
+```bash
+   cd .. /front
+```
+2)Instala las dependencias:
+```bash
+   npm install
+```
+
+3)Asegurá los ambientes de configuración en src/environments/environment.ts:
+```bash
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:3000/'
+};
+```
+4)Desplegá el servidor de desarrollo local:
+```bash
+ng serve -o
+```
+
+Se va abir el navegador el proyecto
+
+
+## 📝 Licencia
+Este proyecto fue desarrollado bajo fines académicos exclusivamente para la materia Programación IV. Quedan reservados todos los derechos de propiedad intelectual sobre el lore e interfaces de la aplicación.
+
+
+
+   
+   
+
+
+
