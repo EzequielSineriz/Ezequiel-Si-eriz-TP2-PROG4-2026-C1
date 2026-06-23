@@ -13,7 +13,7 @@ Desarrollado como proyecto integrador final de desarrollo de software para la **
 
 ## 👤 Autor
 
-* **Braian Ezequiel Sineriz** - *Desarrollador Full-Stack* - [Tu GitHub]([(https://github.com/EzequielSineriz)])
+* **Braian Ezequiel Sineriz** - *Desarrollador Full-Stack* - [Tu GitHub](https://github.com/EzequielSineriz)
 
 Proyecto integrador final de desarrollo de software desarrollado para la **Universidad Tecnológica Nacional (UTN)**.
 
