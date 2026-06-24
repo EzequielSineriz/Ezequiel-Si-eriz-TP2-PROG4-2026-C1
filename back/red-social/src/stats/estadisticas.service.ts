@@ -11,7 +11,6 @@ export class EstadisticasService {
     @InjectModel('Usuario') private readonly usuarioModel: Model<Usuario>,
   ) {}
 
-  // 📐 1. Define dinámicamente el inicio del Nexo Temporal y el formato de agrupación
   private calcularRangoYAgrupacion(periodo: string) {
     const fechaActual = new Date();
     let fechaInicio = new Date();
@@ -51,7 +50,6 @@ export class EstadisticasService {
     return { fechaInicio, idAgrupacion };
   }
 
-  // 🛡️ 2. EL MOLDEADOR ESPECTRAL: Fuerza la estructura de velas exacta que querés ver
   private rellenarVelasEstructuradas(datos: any[], periodo: string): { label: string; value: number }[] {
     const resultado: { label: string; value: number }[] = [];
     const fechaActual = new Date();
@@ -102,9 +100,7 @@ export class EstadisticasService {
     return datos;
   }
 
-  // 📊 Métrica 1: Gráfico de Barras (Publicaciones)
   async contarPublicacionesPorUsuario(inicio: string, fin: string, usuarioId?: string, periodo: string = 'mes') {
-    // Si se busca un usuario específico, recalculamos dinámicamente basándonos en el 'periodo' elegido
     if (usuarioId && usuarioId !== 'ID_INVALIDO_NEXO') {
       const { fechaInicio, idAgrupacion } = this.calcularRangoYAgrupacion(periodo);
       
@@ -142,7 +138,6 @@ export class EstadisticasService {
     ]);
   }
 
-  // 📐 Métrica 2: Pirámide Horizontal (Comentarios Totales en el Tiempo)
   async contarComentariosTotales(inicio: string, fin: string, usuarioId?: string, periodo: string = 'mes') {
     const { fechaInicio, idAgrupacion } = this.calcularRangoYAgrupacion(periodo);
 
@@ -166,7 +161,6 @@ export class EstadisticasService {
     return this.rellenarVelasEstructuradas(resultado, periodo);
   }
 
-  // 🍕 Métrica 3: Gráfico Circular
   async contarComentariosPorPublicacion(inicio: string, fin: string, usuarioId?: string) {
     const filtro: any = {
       eliminada: false,

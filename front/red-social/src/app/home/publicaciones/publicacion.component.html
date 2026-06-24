@@ -18,7 +18,7 @@
         </div>
 
         <p class="text-base text-gray-200 mb-3 font-body leading-relaxed">
-          {{ post()!.contenido }}
+          {{ post()!.contenido | censuraParanormal}}
         </p>
 
         @if (post()!.imagenUrl) {

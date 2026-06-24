@@ -2,14 +2,18 @@ import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, inject, Input, input, Output } from '@angular/core';
 import { IPublicacion } from '../../publicaciones/publicaciones.interface';
 import Swal from 'sweetalert2';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../auth/services/auth.service';
 import { PublicacionesService } from '../../publicaciones/publicaciones.service';
 import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
+import { PostMioEstiloDirective } from '../../../utils/directives/post-mio-estilo';
+import { PostCategoriaEstiloDirective } from '../../../utils/directives/post-categoria-estilo';
+import { TiempoEspectralPipe } from '../../../utils/pipes/tiempo-comentario-pipe';
+import { CensuraParanormalPipe } from '../../../utils/pipes/palabras-censuradas-pipe';
 
 @Component({
   selector: 'app-post-card',
-  imports: [CommonModule, ImagenMediaPipe],
+  imports: [CommonModule, ImagenMediaPipe,PostMioEstiloDirective,PostCategoriaEstiloDirective,TiempoEspectralPipe,CensuraParanormalPipe],
   templateUrl:'./post-card.html',
   styleUrl: './post-card.css',
 })

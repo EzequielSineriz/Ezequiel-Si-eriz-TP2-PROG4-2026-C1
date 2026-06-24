@@ -8,12 +8,13 @@ import { AdminUsuariosService } from '../admin/admin.service';
 import { UsuarioDashboard } from './usuarioDashboard.interface';
 import { AuthService } from '../../auth/services/auth.service';
 import { FormUtils } from '../../utils/forms.utils';
+import { PerfilEstiloDirective } from '../../utils/directives/perfil-estilo';
 
 
 @Component({
   selector: 'app-dashboard-usuarios',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule,PerfilEstiloDirective],
   templateUrl: './dashboard.usuarios.html',
 })
 export class DashboardUsuarios implements OnInit {
