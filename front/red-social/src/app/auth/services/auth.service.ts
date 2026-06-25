@@ -247,37 +247,36 @@ export class AuthService {
   }
 
   actualizarPerfilUsuario(
-    id: string,
-    descripcion: string,
-    avatarArchivo: File | null,
-  ): Observable<any> {
-    const formData = new FormData();
-    formData.append('descripcion', descripcion);
+  id: string,
+  descripcion: string,
+  avatarArchivo: File | null,
+): Observable<any> {
+  const formData = new FormData();
+  formData.append('descripcion', descripcion);
 
-    if (avatarArchivo) {
-      formData.append('avatar', avatarArchivo); // Coincide con el 'avatar' del backend Interceptor
-    }
-
-    const token = localStorage.getItem('paranormal_token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http
-      .put(`${this.apiUrl}/auth/usuarios/${id}/perfil`, formData, { headers })
-      .pipe(
-        tap((usuarioActualizado: any) => {
-          // 🔮 Sincronización crucial: actualizamos el LocalStorage y el Signal de la sesión global
-          const sesionActual = this.usuarioActual(); // Asumiendo que es un Signal
-          if (sesionActual) {
-            const nuevaSesion = sesionActual.user
-              ? { ...sesionActual, user: usuarioActualizado }
-              : usuarioActualizado;
-
-            localStorage.setItem('paranormal_user', JSON.stringify(nuevaSesion));
-            // Si tu signal es de escritura, lo actualizás (ej: this.usuarioActual.set(nuevaSesion));
-          }
-        }),
-      );
+  if (avatarArchivo) {
+    formData.append('avatar', avatarArchivo);
   }
+
+  const token = localStorage.getItem('paranormal_token');
+  const headers = new HttpHeaders({
+    Authorization: `Bearer ${token}`,
+  });
+
+  // 🔮 CORRECCIÓN ACÁ: Apuntamos directamente a /usuarios/ en vez de /auth/usuarios/
+  return this.http
+    .put(`${this.apiUrl}/usuarios/${id}/perfil`, formData, { headers })
+    .pipe(
+      tap((usuarioActualizado: any) => {
+        const sesionActual = this.usuarioActual();
+        if (sesionActual) {
+          const nuevaSesion = sesionActual.user
+            ? { ...sesionActual, user: usuarioActualizado }
+            : usuarioActualizado;
+
+          localStorage.setItem('paranormal_user', JSON.stringify(nuevaSesion));
+        }
+      }),
+    );
+}
 }

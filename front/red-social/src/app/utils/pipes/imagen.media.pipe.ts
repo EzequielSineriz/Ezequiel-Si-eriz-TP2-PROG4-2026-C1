@@ -8,30 +8,34 @@ import { environment } from '../../../environments/enviroment';
 export class ImagenMediaPipe implements PipeTransform {
 
   transform(urlOriginal: any): string {
-    const fallback = 'assets/images/default-avatar.png';
+  const fallback = 'assets/images/default-avatar.png';
 
-    // 1. Control de seguridad contra nulos, indefinidos o tipos incorrectos
-    if (!urlOriginal || typeof urlOriginal !== 'string') {
-      return fallback;
-    }
+  if (!urlOriginal || typeof urlOriginal !== 'string') {
+    return fallback;
+  }
 
-    const urlLimpia = urlOriginal.trim();
+  const urlLimpia = urlOriginal.trim();
 
-    // 2. Si viene de la época de desarrollo local, la redirigimos a Render
-    if (urlLimpia.includes('localhost:3000')) {
-      const pathRelativo = urlLimpia.split('localhost:3000')[1];
-      // Limpiamos el /api si tu url de entorno lo trae, para apuntar a la raíz de estáticos de Render
-      const baseApi = environment.apiUrl.replace('/api', '');
-      return `${baseApi}${pathRelativo}`;
-    }
+  // 1. Si apunta al localhost viejo de desarrollo, lo mandamos a la RAÍZ de Render (donde viven los estáticos)
+  if (urlLimpia.includes('localhost:3000')) {
+    const pathRelativo = urlLimpia.split('localhost:3000')[1];
+    const baseRaiz = environment.apiUrl.replace('/api', '');
+    return `${baseRaiz}${pathRelativo}`;
+  }
 
-    // 3. Si la base de datos devuelve el path relativo directo del backend (ej: "/uploads/avatar.png")
-    if (urlLimpia.startsWith('/uploads')) {
-      const baseApi = environment.apiUrl.replace('/api', '');
-      return `${baseApi}${urlLimpia}`;
-    }
+  // 2. Si es una ruta relativa pura que empieza con /uploads, va a la RAÍZ de Render
+  if (urlLimpia.startsWith('/uploads')) {
+    const baseRaiz = environment.apiUrl.replace('/api', '');
+    return `${baseRaiz}${urlLimpia}`;
+  }
 
-    // 4. Si es una URL externa (Cloudinary, Supabase o URL absoluta de Render)
+  // 3. ¡La Clave! Si la URL ya es una dirección web completa de Render (contiene "onrender.com")
+  // pero NO incluye "/uploads", significa que es una foto de perfil externa o un link roto.
+  // No le tocamos nada para no romper el "/api" de las consultas.
+  if (urlLimpia.includes('onrender.com') && !urlLimpia.includes('/uploads')) {
     return urlLimpia;
   }
+
+  return urlLimpia;
+}
 }

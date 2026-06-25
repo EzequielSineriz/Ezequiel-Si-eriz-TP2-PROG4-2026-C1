@@ -22,7 +22,7 @@ export class Feed implements OnInit, OnDestroy {
   public limite: number = 5;
   public offset: number = 0;
   public finDeRegistros: boolean = false;
-  public cargando: boolean = false; // 👈 Evita peticiones simultáneas idénticas
+  public cargando: boolean = false;
 
   private observador?: IntersectionObserver;
 
