@@ -263,7 +263,6 @@ export class AuthService {
     Authorization: `Bearer ${token}`,
   });
 
-  // 🔮 CORRECCIÓN ACÁ: Apuntamos directamente a /usuarios/ en vez de /auth/usuarios/
   return this.http
     .put(`${this.apiUrl}/usuarios/${id}/perfil`, formData, { headers })
     .pipe(

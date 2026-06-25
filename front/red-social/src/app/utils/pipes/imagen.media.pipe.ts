@@ -7,7 +7,7 @@ import { environment } from '../../../environments/enviroment';
 })
 export class ImagenMediaPipe implements PipeTransform {
 
-  transform(urlOriginal: any): string {
+transform(urlOriginal: any): string {
   const fallback = 'assets/images/default-avatar.png';
 
   if (!urlOriginal || typeof urlOriginal !== 'string') {
@@ -16,24 +16,15 @@ export class ImagenMediaPipe implements PipeTransform {
 
   const urlLimpia = urlOriginal.trim();
 
-  // 1. Si apunta al localhost viejo de desarrollo, lo mandamos a la RAÍZ de Render (donde viven los estáticos)
+  // 1. Si viene con localhost:3000 de desarrollo, lo mandamos a la raíz de Render
   if (urlLimpia.includes('localhost:3000')) {
     const pathRelativo = urlLimpia.split('localhost:3000')[1];
-    const baseRaiz = environment.apiUrl.replace('/api', '');
-    return `${baseRaiz}${pathRelativo}`;
+    return `${environment.apiUrl}${pathRelativo}`;
   }
 
-  // 2. Si es una ruta relativa pura que empieza con /uploads, va a la RAÍZ de Render
+  // 2. Si es una ruta relativa pura (/uploads/...) le pegamos la URL base de Render adelante
   if (urlLimpia.startsWith('/uploads')) {
-    const baseRaiz = environment.apiUrl.replace('/api', '');
-    return `${baseRaiz}${urlLimpia}`;
-  }
-
-  // 3. ¡La Clave! Si la URL ya es una dirección web completa de Render (contiene "onrender.com")
-  // pero NO incluye "/uploads", significa que es una foto de perfil externa o un link roto.
-  // No le tocamos nada para no romper el "/api" de las consultas.
-  if (urlLimpia.includes('onrender.com') && !urlLimpia.includes('/uploads')) {
-    return urlLimpia;
+    return `${environment.apiUrl}${urlLimpia}`;
   }
 
   return urlLimpia;
