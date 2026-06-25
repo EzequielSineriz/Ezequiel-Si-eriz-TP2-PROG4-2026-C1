@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "cli": {
-    "packageManager": "bun",
+    "packageManager": "npm",
     "analytics": false
   },
   "newProjectRoot": "projects",
@@ -25,11 +25,13 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.css"
-            ]
+            ],
+            "serviceWorker": "ngsw-config.json"
           },
           "configurations": {
             "production": {
