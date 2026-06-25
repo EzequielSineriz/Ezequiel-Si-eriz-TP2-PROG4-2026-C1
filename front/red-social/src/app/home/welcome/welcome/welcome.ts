@@ -8,7 +8,7 @@ import { AsideIzquierdo } from "../../shared/aside-izquierdo/aside-izquierdo";
 import { RouterOutlet } from '@angular/router';
 import { Feed } from "../feed/feed";
 import { NavbarSuperior } from "../../shared/navbar-superior/navbar-superior";
-import { PublicacionesService } from '../../publicaciones/publicaciones.service';
+import { PublicacionesService } from '../../publicaciones/service/publicaciones.service';
 
 @Component({
   selector: 'app-welcome',

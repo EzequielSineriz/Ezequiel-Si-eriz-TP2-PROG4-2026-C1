@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
+import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
 
 @Component({
   selector: 'app-aside-izquierdo',

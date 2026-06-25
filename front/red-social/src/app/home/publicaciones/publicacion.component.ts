@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import Swal from 'sweetalert2';
-import { EspectroComentariosPipe } from './comentarios/comentarios-count.pipe';
+import { EspectroComentariosPipe } from '../../utils/pipes/comentarios-count.pipe';
 import { IComentario } from './comentarios/comentarios.interfaces';
 import { ComentariosService } from './comentarios/comentarios.service';
-import { IPublicacion } from './publicaciones.interface';
-import { PublicacionesService } from './publicaciones.service';
+import { IPublicacion } from './interfaces/publicaciones.interface';
+import { PublicacionesService } from './service/publicaciones.service';
 import { AuthService } from '../../auth/services/auth.service';
-import { ImagenMediaPipe } from '../../utils/imagen.media.pipe';
-import { CensuraParanormalPipe } from '../../utils/pipes/palabras-censuradas-pipe';
+import { ImagenMediaPipe } from '../../utils/pipes/imagen.media.pipe';
+import { CensuraParanormalPipe } from '../../utils/pipes/palabras-censuradas.pipe';
 
 @Component({
   selector: 'app-publicacion',

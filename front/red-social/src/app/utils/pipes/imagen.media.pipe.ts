@@ -1,5 +1,5 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { environment } from '../../environments/enviroment';
+import { environment } from '../../../environments/enviroment';
 
 @Pipe({
   name: 'imagenMedia',

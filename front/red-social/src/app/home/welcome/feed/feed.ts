@@ -1,8 +1,8 @@
 import { Component, inject, OnInit, signal, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
 import { PostBox } from "../post-box/post-box";
 import { PostCard } from "../post-card/post-card";
-import { IPublicacion } from '../../publicaciones/publicaciones.interface';
-import { PublicacionesService } from '../../publicaciones/publicaciones.service';
+import { IPublicacion } from '../../publicaciones/interfaces/publicaciones.interface';
+import { PublicacionesService } from '../../publicaciones/service/publicaciones.service';
 
 @Component({
   selector: 'app-feed',

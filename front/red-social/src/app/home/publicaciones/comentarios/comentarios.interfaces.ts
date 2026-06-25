@@ -1,4 +1,4 @@
-import { IAutor } from '../publicaciones.interface'; // Asegurate de importar tu interfaz de autor
+import { IAutor } from '../interfaces/publicaciones.interface'; // Asegurate de importar tu interfaz de autor
 
 export interface IComentario {
   _id: string;

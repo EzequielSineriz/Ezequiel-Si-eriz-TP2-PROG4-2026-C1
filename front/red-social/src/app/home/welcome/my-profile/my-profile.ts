@@ -1,12 +1,12 @@
 import { Component, effect, inject, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { CommonModule } from '@angular/common';
-import { IPublicacion } from '../../publicaciones/publicaciones.interface';
-import { PublicacionesService } from '../../publicaciones/publicaciones.service';
+import { IPublicacion } from '../../publicaciones/interfaces/publicaciones.interface';
+import { PublicacionesService } from '../../publicaciones/service/publicaciones.service';
 import { PostCard } from "../post-card/post-card";
 import Swal from 'sweetalert2';
 import { FormsModule } from '@angular/forms';
-import { ImagenMediaPipe } from '../../../utils/imagen.media.pipe';
+import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
 
 @Component({
   selector: 'app-my-profile',
