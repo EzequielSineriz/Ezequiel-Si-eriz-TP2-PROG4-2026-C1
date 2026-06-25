@@ -3,24 +3,35 @@ import { environment } from '../../../environments/enviroment';
 
 @Pipe({
   name: 'imagenMedia',
-  standalone: true
+  standalone: true // Si lo usás en componentes standalone
 })
 export class ImagenMediaPipe implements PipeTransform {
 
-  transform(urlOriginal: string): string {
-    if (!urlOriginal) {
-      return 'assets/images/default-avatar.png';
+  transform(urlOriginal: any): string {
+    const fallback = 'assets/images/default-avatar.png';
+
+    // 1. Control de seguridad contra nulos, indefinidos o tipos incorrectos
+    if (!urlOriginal || typeof urlOriginal !== 'string') {
+      return fallback;
     }
 
-    if (urlOriginal.includes('localhost:3000')) {
-      const pathRelativo = urlOriginal.split('localhost:3000')[1];
-      return `${environment.apiUrl.replace('/api', '')}${pathRelativo}`;
+    const urlLimpia = urlOriginal.trim();
+
+    // 2. Si viene de la época de desarrollo local, la redirigimos a Render
+    if (urlLimpia.includes('localhost:3000')) {
+      const pathRelativo = urlLimpia.split('localhost:3000')[1];
+      // Limpiamos el /api si tu url de entorno lo trae, para apuntar a la raíz de estáticos de Render
+      const baseApi = environment.apiUrl.replace('/api', '');
+      return `${baseApi}${pathRelativo}`;
     }
 
-    if (urlOriginal.startsWith('/uploads')) {
-      return `${environment.apiUrl.replace('/api', '')}${urlOriginal}`;
+    // 3. Si la base de datos devuelve el path relativo directo del backend (ej: "/uploads/avatar.png")
+    if (urlLimpia.startsWith('/uploads')) {
+      const baseApi = environment.apiUrl.replace('/api', '');
+      return `${baseApi}${urlLimpia}`;
     }
 
-    return urlOriginal;
+    // 4. Si es una URL externa (Cloudinary, Supabase o URL absoluta de Render)
+    return urlLimpia;
   }
 }

@@ -11,11 +11,19 @@ import { PublicacionesService } from './service/publicaciones.service';
 import { AuthService } from '../../auth/services/auth.service';
 import { ImagenMediaPipe } from '../../utils/pipes/imagen.media.pipe';
 import { CensuraParanormalPipe } from '../../utils/pipes/palabras-censuradas.pipe';
+import { PostCategoriaEstiloDirective } from '../../utils/directives/post-categoria-estilo';
 
 @Component({
   selector: 'app-publicacion',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, EspectroComentariosPipe, ImagenMediaPipe, CensuraParanormalPipe],
+  imports: [
+    CommonModule,
+    FormsModule,
+    RouterLink,
+    EspectroComentariosPipe,
+    ImagenMediaPipe,
+    PostCategoriaEstiloDirective,
+    CensuraParanormalPipe],
   templateUrl: './publicacion.component.html',
 })
 export class DetallePublicacionComponent implements OnInit {

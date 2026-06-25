@@ -11,7 +11,6 @@ export class ComentariosService {
   private http = inject(HttpClient);
   private apiUrl = environment.apiUrl + '/comentarios';
 
-  // Helper para las cabeceras seguras (Bearer Token)
   private obtenerCabeceras(): HttpHeaders {
     const token = localStorage.getItem('paranormal_token');
     return new HttpHeaders({
@@ -19,7 +18,6 @@ export class ComentariosService {
     });
   }
 
-  // Crear un nuevo aporte paranormal
   crearComentario(contenido: string, publicacionId: string): Observable<IComentario> {
     return this.http.post<IComentario>(this.apiUrl, { contenido, publicacionId }, {
       headers: this.obtenerCabeceras()
@@ -40,7 +38,6 @@ export class ComentariosService {
     });
   }
 
-  // Reacciones espectrales (Likes y Dislikes)
   darLike(id: string): Observable<IComentario> {
     return this.http.post<IComentario>(`${this.apiUrl}/${id}/like`, {}, {
       headers: this.obtenerCabeceras()

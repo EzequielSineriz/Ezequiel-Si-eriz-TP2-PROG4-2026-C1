@@ -164,7 +164,7 @@ export class Estadisticas implements OnInit {
           }]
         };
 
-        // 🟢 Apagamos el loader recién cuando TODO está listo en memoria
+        //  Apagamos el loader recién cuando TODO está listo en memoria
         this.cargando.set(false);
       },
       error: (err) => {
