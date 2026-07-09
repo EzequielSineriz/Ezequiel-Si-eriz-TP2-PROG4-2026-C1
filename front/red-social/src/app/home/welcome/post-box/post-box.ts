@@ -1,10 +1,20 @@
 import { Component, EventEmitter, inject, Output } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { ScaryGhostIcon } from '../../../utils/icons/ghost_icon';
+import { ScaryUfoIconComponent } from '../../../utils/icons/ovni_icons';
+import { ScaryMythIconComponent } from '../../../utils/icons/mytology_icons';
+import { ScaryGeneralIconComponent } from '../../../utils/icons/pergamino_icons';
+import { ScaryEvidenceIconComponent } from '../../../utils/icons/scary_evidence';
 
 @Component({
   selector: 'app-post-box',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, ScaryGhostIcon,
+    ScaryUfoIconComponent,
+    ScaryMythIconComponent,
+    ScaryGeneralIconComponent,
+    ScaryEvidenceIconComponent
+  ],
   templateUrl: './post-box.html',
   styleUrl: './post-box.css',
 })
@@ -21,10 +31,10 @@ export class PostBox {private fb = inject(FormBuilder);
   });
 
   public categorias = [
-  { id: 'ovnis', nombre: '🛸 Ovnis y Avistamientos' },
-  { id: 'fantasmas', nombre: '👻 Fantasmas y Psicofonías' },
-  { id: 'mitologia', nombre: '🗿 Mitología y Leyendas' },
-  { id: 'general', nombre: '📜 Difusión General' }
+  { id: 'ovnis', nombre: 'Ovnis y Avistamientos' },
+  { id: 'fantasmas', nombre: 'Fantasmas y Psicofonías' },
+  { id: 'mitologia', nombre: 'Mitología y Leyendas' },
+  { id: 'general', nombre: 'Difusión General' }
 ];
 
   onFileSelected(event: Event) {

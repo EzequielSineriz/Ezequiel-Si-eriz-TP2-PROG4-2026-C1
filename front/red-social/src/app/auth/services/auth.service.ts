@@ -5,7 +5,7 @@ import { IRegistro, IAuthResponse, ILogin } from '../interfaces/auth.interfaces'
 import Swal from 'sweetalert2';
 import { AbstractControl, FormGroup } from '@angular/forms';
 import { of, delay, map, catchError, tap, Observable } from 'rxjs';
-import { environment } from '../../../environments/enviroment';
+import { environment } from '../../../environments/enviroment.development';
 
 @Injectable({
   providedIn: 'root',

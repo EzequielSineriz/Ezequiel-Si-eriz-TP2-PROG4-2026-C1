@@ -3,10 +3,11 @@ import { PostBox } from "../post-box/post-box";
 import { PostCard } from "../post-card/post-card";
 import { IPublicacion } from '../../publicaciones/interfaces/publicaciones.interface';
 import { PublicacionesService } from '../../publicaciones/service/publicaciones.service';
+import { ScaryEvidenceIconComponent } from '../../../utils/icons/scary_evidence';
 
 @Component({
   selector: 'app-feed',
-  imports: [PostBox, PostCard],
+  imports: [PostBox, PostCard, ScaryEvidenceIconComponent],
   templateUrl: './feed.html',
   styleUrl: './feed.css',
 })

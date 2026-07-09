@@ -68,7 +68,7 @@ export class Login {
   reproducirAmbiente() {
     const audio = document.getElementById('audioLogia') as HTMLAudioElement;
     if (audio) {
-      audio.volume = 0.25; // Seteamos un volumen ambiente sutil para no aturdir
+      audio.volume = 0.15;
       audio.play().then(() => {
         this.mutado.set(false);
       }).catch(() => {
@@ -99,11 +99,8 @@ export class Login {
     if (this.mutado()) this.reproducirAmbiente();
   }
 
-  // Manejador genérico para botones de redes externas
   loginOAuth(provider: 'google' | 'github') {
     console.log(`Abriendo portal de autenticación OAuth via: ${provider.toUpperCase()}`);
-    // Si tenés implementada la redirección en el authService de NestJS la podés gatillar acá
-    // window.location.href = `http://localhost:3000/auth/${provider}`;
   }
 
   accion() {

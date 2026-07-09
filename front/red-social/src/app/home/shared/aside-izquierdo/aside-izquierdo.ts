@@ -2,10 +2,14 @@ import { AfterViewInit, Component, ElementRef, inject, signal, ViewChild } from 
 import { AuthService } from '../../../auth/services/auth.service';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
+import {LucideSmile} from "@lucide/angular";
+
+
+
 
 @Component({
   selector: 'app-aside-izquierdo',
-  imports: [RouterLink,RouterLinkActive, ImagenMediaPipe],
+  imports: [RouterLink,RouterLinkActive, ImagenMediaPipe, LucideSmile],
   templateUrl: './aside-izquierdo.html',
   styleUrl: './aside-izquierdo.css',
 })

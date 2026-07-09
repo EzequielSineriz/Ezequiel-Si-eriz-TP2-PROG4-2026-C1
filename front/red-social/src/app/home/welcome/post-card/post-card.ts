@@ -9,11 +9,29 @@ import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
 import { PostMioEstiloDirective } from '../../../utils/directives/post-mio-estilo';
 import { PostCategoriaEstiloDirective } from '../../../utils/directives/post-categoria-estilo';
 import { TiempoEspectralPipe } from '../../../utils/pipes/tiempo-comentario.pipe';
-import { CensuraParanormalPipe } from '../../../utils/pipes/palabras-censuradas.pipe';
+import { ScaryMythIconComponent } from '../../../utils/icons/mytology_icons';
+import { ScaryUfoIconComponent } from '../../../utils/icons/ovni_icons';
+import { ScaryGeneralIconComponent } from '../../../utils/icons/pergamino_icons';
+import { ScaryGhostIcon } from '../../../utils/icons/ghost_icon';
+import { ScaryTrashIconComponent } from '../../../utils/icons/basura_icons';
+import { ScaryCommentIconComponent } from '../../../utils/icons/comentarios_icons';
+import { ScaryHeartIconComponent } from '../../../utils/icons/corazon_icons';
 
 @Component({
   selector: 'app-post-card',
-  imports: [CommonModule, ImagenMediaPipe,PostMioEstiloDirective,PostCategoriaEstiloDirective,TiempoEspectralPipe,CensuraParanormalPipe],
+  imports: [CommonModule,
+    ImagenMediaPipe,
+    PostMioEstiloDirective,
+    PostCategoriaEstiloDirective,
+    TiempoEspectralPipe,
+    ScaryUfoIconComponent,
+    ScaryGhostIcon,
+    ScaryMythIconComponent,
+    ScaryGeneralIconComponent,
+    ScaryCommentIconComponent,
+    ScaryHeartIconComponent,
+    ScaryTrashIconComponent
+  ],
   templateUrl:'./post-card.html',
   styleUrl: './post-card.css',
 })
@@ -32,12 +50,21 @@ export class PostCard {
   public publicacionesService = inject(PublicacionesService);
 
 
-obtenerNombreAutor(): string {
-  if (typeof this.post.autorId === 'object') {
-    return this.post.autorId.nombreUsuario || 'Investigador';
+  obtenerNombreAutor(): string {
+    if (typeof this.post.autorId === 'object') {
+      return this.post.autorId.nombreUsuario || 'Investigador';
+    }
+    return 'Investigador Anónimo';
   }
-  return 'Investigador Anónimo';
-}
+
+  obtenerAvatarAutor(): string {
+    if (typeof this.post.autorId === 'object' && this.post.autorId.avatarUrl) {
+      return this.post.autorId.avatarUrl;
+    }
+    // Retornamos un string vacío o null si no existe, para que el HTML use el fallback de tu Pipe
+    return '';
+  }
+
 
 
   get esMiPost(): boolean {

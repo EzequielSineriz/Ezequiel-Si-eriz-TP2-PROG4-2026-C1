@@ -20,10 +20,9 @@ import { PostCategoriaEstiloDirective } from '../../utils/directives/post-catego
     CommonModule,
     FormsModule,
     RouterLink,
-    EspectroComentariosPipe,
     ImagenMediaPipe,
     PostCategoriaEstiloDirective,
-    CensuraParanormalPipe],
+],
   templateUrl: './publicacion.component.html',
 })
 export class DetallePublicacionComponent implements OnInit {

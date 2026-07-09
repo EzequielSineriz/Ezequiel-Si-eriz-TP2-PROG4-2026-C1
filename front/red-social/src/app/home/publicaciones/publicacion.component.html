@@ -10,11 +10,24 @@
     class="rounded-lg bg-black/40 border shadow-xl overflow-hidden backdrop-blur-sm transition-all duration-300">
 
     <div class="p-4 pb-3">
-      <div class="flex justify-between items-center mb-2">
-        <span class="font-bold text-emerald-400 text-sm">
-          👤 {{ post()!.autorId && typeof post()!.autorId === 'object' ? $any(post()!.autorId).nombreUsuario :
-          'Investigador' }}
-        </span>
+      <div class="flex justify-between items-center mb-4">
+
+    <div class="flex items-center gap-2.5">
+
+      <div class="w-7 h-7 rounded-full bg-black border border-emerald-500/30 flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.2)]">
+        @if (post()!.autorId && typeof post()!.autorId === 'object' && $any(post()!.autorId).avatarUrl) {
+          <img [src]="$any(post()!.autorId).avatarUrl | imagenMedia"
+               class="w-full h-full object-cover"
+               alt="Avatar del Autor">
+        } @else {
+          <span class="text-xs">👁️</span>
+        }
+      </div>
+
+      <span class="font-bold text-emerald-400 text-sm tracking-wide">
+        {{ post()!.autorId && typeof post()!.autorId === 'object' ? $any(post()!.autorId).nombreUsuario : 'Investigador' }}
+      </span>
+    </div>
 
         <span [class]="'text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded' +
             (post()!.categoria === 'ovnis' ? ' bg-cyan-950/50 text-cyan-400 border border-cyan-500/20' :
@@ -26,7 +39,7 @@
       </div>
 
       <p class="text-base text-gray-200 mb-3 font-body leading-relaxed">
-        {{ post()!.contenido | censuraParanormal}}
+        {{ post()!.contenido }}
       </p>
 
       @if (post()!.imagenUrl) {
@@ -38,7 +51,7 @@
       <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex justify-between items-center">
         <div class="flex gap-6 items-center">
           <span class="flex items-center gap-1.5">
-            💬 {{ post()!.comentarios | espectroComentarios }}
+            💬 {{ post()!.comentarios }}
           </span>
           <button (click)="alternarLikePost()" [class.text-rose-500]="leDioLikeAlPost()"
             class="flex items-center gap-1.5 hover:text-rose-500 transition-colors bg-transparent border-none cursor-pointer text-xs">
@@ -50,7 +63,7 @@
         <button (click)="eliminarPublicacionActual()"
           class="text-gray-500 hover:text-red-500 transition-colors bg-transparent border-none cursor-pointer text-xs flex items-center gap-1 font-bold uppercase tracking-wider"
           title="Eliminar evidencia">
-          🗑️ Eliminar Post
+          <svg xmlns="http://www.w3.org/2000/svg" color="AB0A2C" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brush-cleaning-icon lucide-brush-cleaning"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg> Eliminar Post
         </button>
         }
       </div>
