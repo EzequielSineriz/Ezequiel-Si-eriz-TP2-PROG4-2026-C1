@@ -12,6 +12,8 @@ import { AuthService } from '../../auth/services/auth.service';
 import { ImagenMediaPipe } from '../../utils/pipes/imagen.media.pipe';
 import { CensuraParanormalPipe } from '../../utils/pipes/palabras-censuradas.pipe';
 import { PostCategoriaEstiloDirective } from '../../utils/directives/post-categoria-estilo';
+import { ScaryCommentIconComponent } from '../../utils/icons/comentarios_icons';
+import { ScaryHeartIconComponent } from '../../utils/icons/corazon_icons';
 
 @Component({
   selector: 'app-publicacion',
@@ -22,6 +24,8 @@ import { PostCategoriaEstiloDirective } from '../../utils/directives/post-catego
     RouterLink,
     ImagenMediaPipe,
     PostCategoriaEstiloDirective,
+    ScaryCommentIconComponent,
+    ScaryHeartIconComponent,
 ],
   templateUrl: './publicacion.component.html',
 })
@@ -55,6 +59,8 @@ export class DetallePublicacionComponent implements OnInit {
       this.cargarPostYComentarios(postId);
     }
   }
+
+
 
   public leDioLikeAlPost = computed(() => {
   const p = this.post();

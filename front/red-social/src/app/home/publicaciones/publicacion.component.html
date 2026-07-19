@@ -51,11 +51,14 @@
       <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex justify-between items-center">
         <div class="flex gap-6 items-center">
           <span class="flex items-center gap-1.5">
-            💬 {{ post()!.comentarios }}
+            <app-scary-comment-icon [size]="14"></app-scary-comment-icon>
+            <span class="font-body">{{ post()!.comentarios }}</span>
           </span>
           <button (click)="alternarLikePost()" [class.text-rose-500]="leDioLikeAlPost()"
             class="flex items-center gap-1.5 hover:text-rose-500 transition-colors bg-transparent border-none cursor-pointer text-xs">
-            {{ leDioLikeAlPost() ? '❤️' : '🖤' }} {{ post()!.likes }}
+            <app-scary-heart-icon [size]="14" [active]="leDioLikeAlPost()"></app-scary-heart-icon>
+
+  <span class="font-body">{{ post()!.likes }}</span>
           </button>
         </div>
 
