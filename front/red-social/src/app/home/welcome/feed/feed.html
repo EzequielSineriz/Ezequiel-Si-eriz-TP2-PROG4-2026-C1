@@ -11,9 +11,9 @@
 </div>
 
 
-<app-post-box (onNuevoPost)="agregarNuevoPost($event)"></app-post-box>
+<app-post-box id="tour-crear-post" (onNuevoPost)="agregarNuevoPost($event)"></app-post-box>
 
-<div class="divide-y divide-white/10">
+<div id="tour-feed-posts" class="divide-y divide-white/10">
   @for (item of postsArray(); track item._id) {
     <app-post-card
       [post]="item"

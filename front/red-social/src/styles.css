@@ -65,7 +65,7 @@ body {
 
 /* 1. Telón de fondo (Overlay oscuro con tinte carmesí) */
 .driver-overlay {
-  background-color: rgba(5, 5, 5, 0.85) !important;
+  background-color: rgba(5, 5, 5, 0.55) !important;
 }
 
 /* 2. El recuadro del popover / cartel */
@@ -153,4 +153,24 @@ body {
 .driver-highlighted-element {
   box-shadow: 0 0 20px rgba(239, 68, 68, 0.6) !important;
   border-radius: 8px !important;
+}
+
+/* Color del resplandor y bordes ajustado al verde neón del Feed */
+.driver-popover {
+  border: 1px solid rgba(16, 185, 129, 0.6) !important; /* Emerald / Cyan */
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.35), inset 0 0 15px rgba(0, 0, 0, 0.8) !important;
+}
+
+.driver-popover-title {
+  color: #10b981 !important; /* Emerald 500 */
+}
+
+.driver-popover-footer button:hover {
+  background-color: #065f46 !important;
+  border-color: #10b981 !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5) !important;
+}
+
+.driver-highlighted-element {
+  box-shadow: 0 0 20px rgba(16, 185, 129, 0.6) !important;
 }

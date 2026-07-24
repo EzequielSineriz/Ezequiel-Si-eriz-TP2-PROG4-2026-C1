@@ -31,15 +31,15 @@ export class Login {
     {
       inicial: 'A',
       username: 'Prueba-Admin',
-      email: 'AFRIADENRICH',
-      pass: 'ClaveEspectro123456',
+      email: 'Administrador',
+      pass: 'Abc123456',
       colorClass: 'border-purple-500 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] shadow-purple-950'
     },
     {
-      inicial: 'U',
+      inicial: 'I',
       username: 'Prueba-Usuario',
-      email: 'Willyams',
-      pass: 'Abc123456',
+      email: 'Invitado',
+       pass: 'ClaveEspectro123456',
       colorClass: 'border-cyan-500 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)] shadow-cyan-950'
     },
 
