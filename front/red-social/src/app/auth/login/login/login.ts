@@ -5,6 +5,10 @@ import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { ILogin } from '../../interfaces/auth.interfaces';
 import { FormUtils } from '../../../utils/forms.utils';
+import { Driver, driver} from "driver.js";
+
+
+
 
 @Component({
   selector: 'app-login',
@@ -18,6 +22,7 @@ export class Login {
   public authService = inject(AuthService);
   public formUtils = FormUtils;
   private router = inject(Router);
+  private driverObj: Driver | null = null;
 
   public mutado = signal<boolean>(true);
 
@@ -25,25 +30,19 @@ export class Login {
   public moderadores = [
     {
       inicial: 'A',
-      username: 'AFRIADENRICH',
+      username: 'Prueba-Admin',
       email: 'AFRIADENRICH',
       pass: 'ClaveEspectro123456',
       colorClass: 'border-purple-500 text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)] shadow-purple-950'
     },
     {
-      inicial: 'W',
-      username: 'Developer-W',
+      inicial: 'U',
+      username: 'Prueba-Usuario',
       email: 'Willyams',
       pass: 'Abc123456',
       colorClass: 'border-cyan-500 text-cyan-400 drop-shadow-[0_0_8px_rgba(6,182,212,0.5)] shadow-cyan-950'
     },
-    {
-      inicial: 'W',
-      username: 'NDIEZ-UTN',
-      email: 'NataliaUtn',
-      pass: 'Abc12345',
-      colorClass: 'border-pink-500 text-pink-400 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)] shadow-pink-950'
-    }
+
   ];
 
   public formulario: FormGroup = this.fb.group({
@@ -62,8 +61,61 @@ export class Login {
     setTimeout(() => {
       this.reproducirAmbiente();
     }, 800);
+
+    this.driverObj = driver({
+      showProgress: true,
+      animate: true,
+      progressText: 'Expediente {{current}} de {{total}}',
+      nextBtnText: 'Siguiente',
+      prevBtnText: 'Anterior',
+      doneBtnText: '¡Entendido!',
+      onDestroyed: () => {
+        localStorage.setItem('login_tour_visto', 'true');
+      },
+      steps: [
+        {
+          element: '#tour-login-form',
+          popover: {
+            title: ' Sincronización Manual',
+            description: 'Ingresá tu usuario/correo y clave para verificar tus credenciales en la red.',
+            side: 'left',
+            align: 'start'
+          }
+        },
+        {
+          element: '#tour-moderadores',
+          popover: {
+            title: ' Moderadores / Demo Quick Access',
+            description: 'Hacé click en cualquier esfera para autorellenar credenciales de prueba como Investigador o Administrador.',
+            side: 'bottom',
+            align: 'center'
+          }
+        },
+        {
+          element: '#tour-oauth',
+          popover: {
+            title: ' Portales Externos',
+            description: 'En Proceso de codificacion. Próximamente podrás sincronizar tu cuenta con Google o GitHub.',
+            side: 'top',
+            align: 'center'
+          }
+        }
+      ]
+    });
+    const tourVisto = localStorage.getItem('login_tour_visto');
+    if (!tourVisto) {
+      // Pequeño delay para asegurar que el DOM esté listo
+      setTimeout(() => {
+        this.iniciarTour();
+      }, 1000);
+    }
   }
 
+  iniciarTour() {
+    if (this.driverObj) {
+      this.driverObj.drive();
+    }
+  }
 
   reproducirAmbiente() {
     const audio = document.getElementById('audioLogia') as HTMLAudioElement;
@@ -141,4 +193,7 @@ export class Login {
       }
     });
   }
+
+
+
 }
