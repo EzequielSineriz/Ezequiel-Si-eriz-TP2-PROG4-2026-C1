@@ -11,6 +11,7 @@ import {
   UploadedFile,
   UseGuards,
   UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { TokenGuard } from 'src/auth/token/token.guard';
 import { PublicacionService } from './publicacion.service';
@@ -25,18 +26,24 @@ import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 export class PublicacionController {
   constructor(private readonly publicacionService: PublicacionService) {}
 
-  @Post()
-  @UseInterceptors(
-    FileInterceptor('imagen', {
-      storage: diskStorage({
-        destination: './uploads/publicaciones', // Carpeta para las fotos de los posts
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + '-' + Math.round(Math.random() * 1e9);
-          const ext = extname(file.originalname);
-          callback(null, `post-${uniqueSuffix}${ext}`);
-        },
-      }),
+ @Post()
+ @UseInterceptors(
+  FileInterceptor('imagen', {
+    storage: diskStorage({
+      destination: './uploads/publicaciones',
+      filename: (req, file, callback) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const ext = extname(file.originalname);
+        callback(null, `post-${uniqueSuffix}${ext}`);
+      },
+     }),
+     fileFilter: (req, file, callback) => {          // 👈 nuevo
+      if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+        return callback(new BadRequestException('Solo se permiten imágenes (jpg, png, webp)'), false);
+      }
+      callback(null, true);
+     },
+     limits: { fileSize: 5 * 1024 * 1024 },          // 👈 nuevo, 5MB
     }),
   )
   crear(

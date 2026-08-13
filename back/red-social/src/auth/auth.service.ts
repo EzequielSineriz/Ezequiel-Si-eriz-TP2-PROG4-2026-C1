@@ -47,7 +47,7 @@ export class AuthService {
       perfil: usuarioCreado.perfil, // ¡Clave para el Sprint 4 (Admin/Usuario)!
     };
 
-    const token = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
+    const token = sign(payload, process.env.CLAVE_SUPERSECRETA!, {
       algorithm: 'HS256',
       expiresIn: '30m', 
     });
@@ -100,7 +100,7 @@ export class AuthService {
       perfil: usuario.perfil,
     };
 
-    const token = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
+    const token = sign(payload, process.env.CLAVE_SUPERSECRETA!, {
       algorithm: 'HS256',
       expiresIn: '30m',
     });
@@ -157,7 +157,7 @@ export class AuthService {
     };
 
     // Firmamos el token por 30 minutos exactos
-    const nuevoToken = sign(payload, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key', {
+    const nuevoToken = sign(payload, process.env.CLAVE_SUPERSECRETA!, {
       algorithm: 'HS256',
       expiresIn: '30m',
     });

@@ -27,7 +27,7 @@ export class TokenGuard implements CanActivate {
 
     try {
       // Verificamos el token con la clave secreta
-      const verificado = verify(token, process.env.CLAVE_SUPERSECRETA || 'paranoiac_secret_key'); 
+      const verificado = verify(token, process.env.CLAVE_SUPERSECRETA!); 
 
       // Tipamos lo que viene adentro del token (lo que guardamos en el AuthService)
       const payloadDecodificado = verificado as { 

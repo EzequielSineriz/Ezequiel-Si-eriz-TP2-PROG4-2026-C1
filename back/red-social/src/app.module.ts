@@ -9,9 +9,11 @@ import { AuthModule } from './auth/auth.module';
 import { PublicacionModule } from './publicaciones/publicacion.module';
 import { ComentarioModule } from './comentarios/comentario.module';
 import { EstadisticasModule } from './stats/estadisticas.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [MongooseModule.forRoot('mongodb+srv://ezequielsineriz_db_user:FpAhkyrpO0mddc5h@cluster0.k9mhhz0.mongodb.net/red-social?appName=Cluster0'),
+  imports: [ConfigModule.forRoot({ isGlobal: true }),
+    MongooseModule.forRoot(process.env.MONGO_URI!),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads', // Ruta pública de la API

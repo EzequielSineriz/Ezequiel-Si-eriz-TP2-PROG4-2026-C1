@@ -62,7 +62,7 @@ export class AuthController {
     };
   }
 
-  
+  @UseGuards(TokenGuard)
   @Get('usuarios') 
   async findAll() {
     return await this.authService.obtenerTodosLosUsuarios();
