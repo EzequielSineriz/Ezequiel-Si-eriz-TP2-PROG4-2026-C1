@@ -7,14 +7,38 @@ import { FileInterceptor } from "@nestjs/platform-express";
 import { UserRegisterDto } from "src/usuarios/dto/create-user.dto";
 import { UsuarioLoginDTO } from "src/usuarios/dto/log-in.dto";
 import { TokenGuard } from "./token/token.guard";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
+import * as requestConUsuarioInterface from "./request-con-usuario.interface";
 
+
+@ApiTags('Autenticación')
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
   ) {}  
- @Post('registro')
-  // 🔮 Interceptamos el archivo que venga bajo la llave 'avatar'
+
+
+
+@Post('registro')
+@ApiOperation({ summary: 'Registrar un nuevo usuario', description: 'El perfil siempre queda como "usuario", sin excepción.' })
+@ApiConsumes('multipart/form-data')
+@ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        nombre: { type: 'string' },
+        apellido: { type: 'string' },
+        email: { type: 'string' },
+        nombreUsuario: { type: 'string' },
+        password: { type: 'string' },
+        fechaNacimiento: { type: 'string', format: 'date' },
+        avatar: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Usuario creado, devuelve token y datos del usuario.' })
+  @ApiResponse({ status: 400, description: 'Email o nombre de usuario ya registrados, o datos inválidos.' })
   @UseInterceptors(FileInterceptor('avatar', {
     storage: diskStorage({
       destination: './uploads/avatars', // Carpeta raíz donde se guardarán los archivos
@@ -42,15 +66,21 @@ export class AuthController {
     return this.authService.registrar(usuario, avatarUrl);
   }
 
+
   @Post('/ingresar')
-  @HttpCode(HttpStatus.OK) // Forzamos un 200 OK en vez de 201 Created (Semántica limpia de APIs)
+  @ApiOperation({ summary: 'Iniciar sesión con email/username + password' })
+  @ApiResponse({ status: 200, description: 'Login correcto, devuelve token y datos del usuario.' })
+  @ApiResponse({ status: 401, description: 'Credenciales incorrectas o cuenta deshabilitada.' })
+  @HttpCode(HttpStatus.OK)
   ingresar(@Body() usuario: UsuarioLoginDTO) {
     return this.authService.ingresar(usuario);
   }
 
   @Get('/seguro')
+  @ApiOperation({ summary: 'Acceder a una ruta segura' })
+  @ApiResponse({ status: 200, description: 'Acceso otorgado con éxito.' })
   @UseGuards(TokenGuard)
-  rutaSegura(@Req() req: any) {
+  rutaSegura(@Req() req: requestConUsuarioInterface.RequestConUsuario) {
     // Recuperamos los datos que el Guard guardó en la request
     const usuarioLogueado = req.user; 
     
@@ -65,6 +95,8 @@ export class AuthController {
 
 
   @Get('/check-email')
+  @ApiOperation({ summary: 'Verificar si un email ya está registrado' })
+  @ApiResponse({ status: 200, description: '{ exists: boolean }' })
   async checkEmail(@Query('email') email: string) {
     // Le preguntamos al servicio si el email ya está registrado
     const userExists = await this.authService.findByEmail(email); 
@@ -73,39 +105,43 @@ export class AuthController {
     return { exists: !!userExists }; 
   }
 
-@Post('/refrescar')
-@UseGuards(TokenGuard)
-async refrescar(@Req() req: any) {
-  // 🕵️‍♂️ Investigamos qué metió tu Guard dentro de la Request
-    console.log('--- REVISANDO CONTENIDO DEL REQ.USER ---', req.user);
+  @Post('/refrescar')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Renovar el token antes de que expire' })
+  @ApiResponse({ status: 200, description: 'Token nuevo generado.' })
+  @ApiResponse({ status: 401, description: 'No autenticado.' })
+  @UseGuards(TokenGuard)
+  async refrescar(@Req() req: any) {
+    // 🕵️‍♂️ Investigamos qué metió tu Guard dentro de la Request
+      console.log('--- REVISANDO CONTENIDO DEL REQ.USER ---', req.user);
 
-    if (!req.user) {
-      throw new UnauthorizedException('No se encontraron credenciales válidas en el espectro.');
-    }
+      if (!req.user) {
+        throw new UnauthorizedException('No se encontraron credenciales válidas en el espectro.');
+      }
 
-    // Le pasamos el req.user completo al servicio
-    return this.authService.generarTokenDeRefresco(req.user);
-}
+      // Le pasamos el req.user completo al servicio
+      return this.authService.generarTokenDeRefresco(req.user);
+  }
 
 
   
   @Post('autorizar')
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Devuelve los datos del usuario autenticado a partir del token' })
+  @ApiResponse({ status: 200, description: 'Datos del usuario logueado.' })
+  @ApiResponse({ status: 401, description: 'Token inválido o ausente.' })
   @UseGuards(TokenGuard)
-  @HttpCode(HttpStatus.OK) // Devolvemos un 200 OK
-  async autorizar(@Req() req: any) {
-    // El TokenGuard ya decodificó el token y guardó al usuario en req.user
-    const usuarioLogueado = req.user; 
-    
-    console.log('--- VALIDACIÓN DE ACCESO ESPECTRAL ---');
-    console.log('Token válido para el usuario:', usuarioLogueado.nombreUsuario);
-
-    // Devolvemos los datos limpios del usuario al Frontend
+  @HttpCode(HttpStatus.OK)
+  async autorizar(@Req() req: requestConUsuarioInterface.RequestConUsuario) {
+   const usuarioLogueado = req.user;
     return {
       _id: usuarioLogueado._id,
       email: usuarioLogueado.email,
       nombreUsuario: usuarioLogueado.nombreUsuario,
       perfil: usuarioLogueado.perfil,
-      avatarUrl: usuarioLogueado.avatarUrl || ''
+      avatarUrl: (usuarioLogueado as any).avatarUrl || ''
     };
   }
+
+  
 }   

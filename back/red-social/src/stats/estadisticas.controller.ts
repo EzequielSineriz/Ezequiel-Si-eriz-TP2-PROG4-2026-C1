@@ -8,7 +8,13 @@ import {
 import { EstadisticasService } from './estadisticas.service';
 import { TokenGuard } from 'src/auth/token/token.guard';
 import { AdminGuard } from 'src/auth/admin/admin.guard';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+
+
+
+@ApiTags('Estadísticas')
+@ApiBearerAuth('access-token')
 @Controller('estadisticas')
 @UseGuards(TokenGuard, AdminGuard)
 export class EstadisticasController {
@@ -55,6 +61,8 @@ export class EstadisticasController {
   }
 
   @Get('publicaciones-por-usuario')
+  @ApiOperation({ summary: 'Obtener el número de publicaciones por usuario' })
+  @ApiResponse({ status: 200, description: 'Devuelve el conteo de publicaciones.' })
   async getPublicacionesPorUsuario(
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,
@@ -71,6 +79,8 @@ export class EstadisticasController {
   }
 
   @Get('comentarios-totales')
+  @ApiOperation({ summary: 'Obtener el número total de comentarios' })
+  @ApiResponse({ status: 200, description: 'Devuelve el conteo de comentarios.' })
   async getComentariosTotales(
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,
@@ -85,7 +95,10 @@ export class EstadisticasController {
     );
   }
 
+
   @Get('comentarios-por-publicacion')
+  @ApiOperation({ summary: 'Cantidad de comentarios por publicación', description: 'Solo ADMIN' })
+  @ApiResponse({ status: 200, description: 'Conteo de comentarios por publicación.' })
   async getComentariosPorPublicacion(
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,

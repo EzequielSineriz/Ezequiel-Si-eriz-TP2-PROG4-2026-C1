@@ -3,24 +3,34 @@ import { ComentarioService } from './comentario.service';
 import { CreateComentarioDto } from './dtos/create-comentario.dto';
 import { TokenGuard } from 'src/auth/token/token.guard';
 import * as requestConUsuarioInterface from 'src/auth/request-con-usuario.interface';
+import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+
+@ApiTags('Comentarios')
+@ApiBearerAuth('access-token')
 @Controller('comentarios')
 @UseGuards(TokenGuard)
 export class ComentarioController {
   constructor(private readonly comentarioService: ComentarioService) {}
 
+  @ApiOperation({ summary: 'Crear un comentario en una publicación' })
+  @ApiResponse({ status: 201, description: 'Comentario creado.' })
   @Post()
-  crear(@Body() createDto: CreateComentarioDto, @Req() req: any) {
+  crear(@Body() createDto: CreateComentarioDto, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id);
     return this.comentarioService.crear(createDto, usuarioId);
   }
 
   @Get('publicacion/:pubId')
+  @ApiOperation({ summary: 'Listar comentarios de una publicación puntual' })
+  @ApiResponse({ status: 200, description: 'Comentarios de esa publicación.' })
   obtenerPorPublicacion(@Param('pubId') pubId: string) {
     return this.comentarioService.obtenerPorPublicacion(pubId);
   }
 
   @Get('')
+  @ApiOperation({ summary: 'Listar todos los comentarios (paginado)' })
+  @ApiResponse({ status: 200, description: 'Listado de comentarios.' })
   traerTodos(@Query('limit') limit?: string, @Query('offset') offset?: string) {
   return this.comentarioService.obtenerTodos(
     limit ? Number(limit) : 20,
@@ -30,17 +40,24 @@ export class ComentarioController {
 
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Eliminar un comentario', description: 'Dueño o ADMIN.' })
+  @ApiResponse({ status: 200, description: 'Comentario eliminado.' })
+  @ApiResponse({ status: 401, description: 'No tenés permisos para eliminarlo.' })
   eliminar(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     return this.comentarioService.eliminar(id, req.user);
   }
 
   @Post(':id/like')
+  @ApiOperation({ summary: 'Dar/quitar like a un comentario' })
+  @ApiResponse({ status: 200, description: 'Comentario actualizado.' })
   darLike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id);
     return this.comentarioService.darLike(id, usuarioId);
   }
 
   @Post(':id/dislike')
+  @ApiOperation({ summary: 'Dar/quitar dislike a un comentario' })
+  @ApiResponse({ status: 200, description: 'Comentario actualizado.' })
   darDislike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id);
     return this.comentarioService.darDislike(id, usuarioId);
@@ -48,11 +65,12 @@ export class ComentarioController {
 
 
     @Put('/:id')
-    @UseGuards(TokenGuard)
+    @ApiOperation({ summary: 'Editar el contenido de un comentario propio' })
+    @ApiResponse({ status: 200, description: 'Comentario actualizado.' })
     async modificarComentario(
     @Param('id') id: string,
     @Body('contenido') nuevoContenido: string,
-    @Req() req: any
+    @Req() req: requestConUsuarioInterface.RequestConUsuario
     ) {
     return await this.comentarioService.modificar(id, nuevoContenido, req.user._id);
     }

@@ -6,21 +6,34 @@ import { UsuariosService } from "./usuario.service";
 import { AdminGuard } from "src/auth/admin/admin.guard";
 import { TokenGuard } from "src/auth/token/token.guard";
 import { UserAdminRegisterDto } from "./dto/admin-create-user.dto";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 
+
+
+@ApiTags('Usuarios')
+@ApiBearerAuth('access-token')
 @Controller('usuarios')
 export class UsuariosController {
   constructor(private readonly usuariosService: UsuariosService) {}
 
   @Get()
+  @ApiOperation({ summary: 'Listar usuarios (paginado)', description: 'Solo ADMIN' })
+  @ApiResponse({ status: 200, description: 'Listado de usuarios sin el campo password.' })
+  @ApiResponse({ status: 403, description: 'No tenés permisos de administrador.' })
   @UseGuards(TokenGuard, AdminGuard)
   async listarTodos() {
     return this.usuariosService.listarTodosLosUsuarios();
   }
 
 
-@Post('admin-alta')
-@UseGuards(TokenGuard, AdminGuard)
-@UseInterceptors(
+ @Post('admin-alta')
+ @ApiConsumes('multipart/form-data')
+ @ApiResponse({ status: 201, description: 'Usuario creado.' })
+ @ApiResponse({ status: 400, description: 'Email o nombre de usuario ya registrados.' })
+ @ApiResponse({ status: 403, description: 'No tenés permisos de administrador.' })
+ @UseGuards(TokenGuard, AdminGuard)
+ @ApiOperation({ summary: 'Crear un usuario desde el panel de admin', description: 'Solo ADMIN. Acá sí se puede elegir el perfil (usuario/admin).' })
+ @UseInterceptors(
   FileInterceptor('avatar', {
     storage: diskStorage({
       destination: './uploads/avatars', // Carpeta donde se guardan los avatars
@@ -57,18 +70,27 @@ async crearUsuarioPorAdmin(
 }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Deshabilitar (baja lógica) un usuario', description: 'Solo ADMIN' })
+  @ApiResponse({ status: 200, description: 'Usuario deshabilitado.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   @UseGuards(TokenGuard, AdminGuard)
   async darDeBajaLogica(@Param('id') id: string) {
     return this.usuariosService.modificarEstadoActivo(id, false);
   }
 
   @Post(':id/reactivar')
+  @ApiOperation({ summary: 'Reactivar un usuario deshabilitado', description: 'Solo ADMIN' })
+  @ApiResponse({ status: 200, description: 'Usuario reactivado.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   @UseGuards(TokenGuard, AdminGuard)
   async darDeAltaLogica(@Param('id') id: string) {
     return this.usuariosService.modificarEstadoActivo(id, true);
   }
 
   @Put(':id/perfil')
+  @ApiOperation({ summary: 'Actualizar el perfil de un usuario', description: 'Solo el usuario autenticado' })
+  @ApiResponse({ status: 200, description: 'Perfil actualizado.' })
+  @ApiResponse({ status: 404, description: 'Usuario no encontrado.' })
   @UseGuards(TokenGuard)
   @UseInterceptors(
     FileInterceptor('avatar', {
@@ -89,6 +111,7 @@ async crearUsuarioPorAdmin(
         }
         cb(null, true);
       },
+      limits: { fileSize: 3 * 1024 * 1024 },
     }),
   )
   async actualizarPerfil(

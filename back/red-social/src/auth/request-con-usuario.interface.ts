@@ -1,4 +1,3 @@
-// auth/interfaces/request-con-usuario.interface.ts
 import { Request } from 'express';
 
 export interface UsuarioDelToken {
