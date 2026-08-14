@@ -7,8 +7,8 @@ import { Usuario } from 'src/usuarios/usuario.schema';
 @Injectable()
 export class EstadisticasService {
   constructor(
-    @InjectModel('Publicacion') private readonly publicacionModel: Model<Publicacion>,
-    @InjectModel('Usuario') private readonly usuarioModel: Model<Usuario>,
+    @InjectModel(Publicacion.name) private readonly publicacionModel: Model<Publicacion>,
+    @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
   ) {}
 
   private calcularRangoYAgrupacion(periodo: string) {

@@ -4,6 +4,7 @@ import { IsString, IsNotEmpty, IsEmail, MinLength, IsDate, Matches } from 'class
 
 export class UserRegisterDto {
 
+
   @IsNotEmpty({ message: 'El nombre es requerido' })
   @IsString()
   nombre!: string;

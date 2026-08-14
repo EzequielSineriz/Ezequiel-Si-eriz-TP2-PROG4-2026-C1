@@ -20,7 +20,6 @@ export class EstadisticasController {
     let fechaFin = fin;
 
     if (periodo) {
-      console.log(`[BACKEND CONTROL] Calculando lapso automático para: "${periodo}"`);
       const copiaHoy = new Date();
       
       switch (periodo) {
@@ -60,10 +59,8 @@ export class EstadisticasController {
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,
   ) {
-    console.log('[BACKEND CONTROLLER] Petición entrante a /publicaciones-por-usuario:', { usuarioId, periodo });
     // Pasamos undefined en las fechas manuales y dejamos el periodo al final
     const lapsos = this.normalizarLapsos(undefined, undefined, periodo);
-    console.log(`[BACKEND MONGO RESUELTO] Rangos en MongoDB: Desde ${lapsos.inicio} Hasta ${lapsos.fin}`);
 
     return this.estadisticasService.contarPublicacionesPorUsuario(
       lapsos.inicio,
@@ -78,7 +75,6 @@ export class EstadisticasController {
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,
   ) {
-    console.log('[BACKEND CONTROLLER] Petición entrante a /comentarios-totales:', { usuarioId, periodo });
     const lapsos = this.normalizarLapsos(undefined, undefined, periodo);
     
     return this.estadisticasService.contarComentariosTotales(
@@ -94,7 +90,7 @@ export class EstadisticasController {
     @Query('usuarioId') usuarioId?: string,
     @Query('periodo') periodo?: string,
   ) {
-    console.log('[BACKEND CONTROLLER] Petición entrante a /comentarios-por-publicacion:', { usuarioId, periodo });
+    // console.log('[BACKEND CONTROLLER] Petición entrante a /comentarios-por-publicacion:', { usuarioId, periodo });
     const lapsos = this.normalizarLapsos(undefined, undefined, periodo);
     
     return this.estadisticasService.contarComentariosPorPublicacion(

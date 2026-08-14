@@ -3,80 +3,105 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Usuario } from './usuario.schema';
 import * as bcrypt from 'bcrypt';
+import { UserRegisterDto } from './dto/create-user.dto';
 import { UserAdminRegisterDto } from './dto/admin-create-user.dto';
-
 
 @Injectable()
 export class UsuariosService {
-constructor(@InjectModel('Usuario') private readonly usuarioModel: Model<Usuario>) {}
+  constructor(@InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>) {}
 
-// 1. Obtener la lista de usuarios completa para el Dashboard
-  async listarTodosLosUsuarios(): Promise<Usuario[]> {
-    return this.usuarioModel.find().select('-password').exec();
-  }
+  // Único lugar donde se crea un usuario -- lo usan tanto el registro público
+  // como el alta desde el panel de admin, así no queda lógica duplicada.
+  private async crearUsuario(
+    datos: UserRegisterDto,
+    avatarUrl: string | undefined,
+    perfil: string,
+  ): Promise<Usuario> {
+    const existeUsuario = await this.usuarioModel.findOne({
+      $or: [{ email: datos.email }, { nombreUsuario: datos.nombreUsuario }],
+    });
 
-  // 2. Crear un usuario desde el panel del admin (con rol configurable)
-  async crearUsuarioDesdeAdmin(datos: UserAdminRegisterDto, avatarUrl?: string): Promise<Usuario> {
-    const { email, nombreUsuario, password, perfil } = datos;
+    if (existeUsuario) {
+      throw new BadRequestException('El correo o el nombre de usuario ya están registrados.');
+    }
 
-    // Validaciones básicas de unicidad
-    const existeEmail = await this.usuarioModel.findOne({ email });
-    if (existeEmail) throw new BadRequestException('El email ya está registrado.');
-
-    const existeUsername = await this.usuarioModel.findOne({ nombreUsuario });
-    if (existeUsername) throw new BadRequestException('El nombre de usuario ya existe.');
-
-    // Hashear contraseña idéntico a tu Auth clásico
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const passwordEncriptada = await bcrypt.hash(datos.password, salt);
 
     const nuevoUsuario = new this.usuarioModel({
       ...datos,
-      password: hashedPassword,
+      password: passwordEncriptada,
       avatarUrl: avatarUrl || '',
-      perfil: perfil || 'usuario', 
-      activo: true
+      perfil,
+      activo: true,
     });
 
-    const guardado = await nuevoUsuario.save();
-    const resultado = guardado.toObject();
+    return nuevoUsuario.save();
+  }
+
+  // Registro público -- el perfil siempre queda en 'usuario', sin excepción.
+  async registrarPublico(datos: UserRegisterDto, avatarUrl?: string): Promise<Usuario> {
+    return this.crearUsuario(datos, avatarUrl, 'usuario');
+  }
+
+  // Alta desde el panel de admin -- acá sí se puede elegir el perfil,
+  // porque el endpoint ya está protegido con TokenGuard + AdminGuard.
+  async crearUsuarioDesdeAdmin(datos: UserAdminRegisterDto, avatarUrl?: string): Promise<Usuario> {
+    const usuario = await this.crearUsuario(datos, avatarUrl, datos.perfil || 'usuario');
+    const resultado = usuario.toObject();
     delete (resultado as any).password;
     return resultado as any;
   }
 
-  // 3. Manejar altas y bajas lógicas (Modificar flag activo)
+  async buscarPorEmailOUsername(identifier: string) {
+    return this.usuarioModel.findOne({
+      $or: [{ email: identifier }, { nombreUsuario: identifier }],
+    });
+  }
+
+  findByEmail(email: string) {
+    return this.usuarioModel.exists({ email });
+  }
+
+  // Paginado -- antes traía todos los usuarios sin límite
+  async listarTodosLosUsuarios(limit = 20, offset = 0): Promise<Usuario[]> {
+    return this.usuarioModel
+      .find()
+      .select('-password')
+      .skip(offset)
+      .limit(limit)
+      .exec();
+  }
+
   async modificarEstadoActivo(userId: string, estado: boolean): Promise<{ mensaje: string }> {
     const usuario = await this.usuarioModel.findByIdAndUpdate(
       userId,
       { $set: { activo: estado } },
-      { new: true }
+      { new: true },
     );
 
     if (!usuario) {
-      throw new NotFoundException('No se encontró el usuario en este plano.');
+      throw new NotFoundException('No se encontró el usuario.');
     }
 
     const accion = estado ? 'habilitado' : 'deshabilitado';
     return { mensaje: `El usuario ha sido ${accion} con éxito.` };
   }
 
-
-
   async actualizarPerfil(userId: string, descripcion?: string, avatarUrl?: string): Promise<Usuario> {
     const camposAActualizar: any = {};
-    
+
     if (descripcion !== undefined) camposAActualizar.descripcion = descripcion;
     if (avatarUrl !== undefined) camposAActualizar.avatarUrl = avatarUrl;
 
-    const usuarioActualizado = await this.usuarioModel.findByIdAndUpdate(
-      userId,
-      { $set: camposAActualizar },
-      { new: true } // Para que devuelva el documento ya modificado
-    ).select('-password'); // Protegemos la contraseña por seguridad espectral
+    const usuarioActualizado = await this.usuarioModel
+      .findByIdAndUpdate(userId, { $set: camposAActualizar }, { new: true })
+      .select('-password');
 
     if (!usuarioActualizado) {
-      throw new NotFoundException('El investigador no ha sido hallado en este plano.');
+      throw new NotFoundException('Usuario no encontrado.');
     }
 
     return usuarioActualizado;
-  }}
+  }
+}

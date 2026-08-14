@@ -82,15 +82,15 @@ async eliminar(id: string, usuario: any): Promise<any> {
   const perfilUsuarioLogueado = usuario.perfil || '';
 
   // 🔮 LOG DE PURIFICACIÓN: Mira esto en la terminal de NestJS cuando tires el tacho
-  console.log('--- DETECTANDO ENERGÍAS EN EL SERVIDOR ---');
-  console.log('ID Autor del Post en BD:', idDelAutorEnBD);
-  console.log('ID Usuario de la Request:', idDelUsuarioLogueado);
-  console.log('Perfil Usuario de la Request:', perfilUsuarioLogueado);
+  //console.log('--- DETECTANDO ENERGÍAS EN EL SERVIDOR ---');
+  //console.log('ID Autor del Post en BD:', idDelAutorEnBD);
+  //console.log('ID Usuario de la Request:', idDelUsuarioLogueado);
+  //console.log('Perfil Usuario de la Request:', perfilUsuarioLogueado);
 
   const esDuenio = idDelAutorEnBD === idDelUsuarioLogueado;
   const esAdmin = perfilUsuarioLogueado === 'admin';
 
-  console.log('¿Es dueño?:', esDuenio, '| ¿Es Admin?:', esAdmin);
+  //console.log('¿Es dueño?:', esDuenio, '| ¿Es Admin?:', esAdmin);
 
   if (!esDuenio && !esAdmin) {
     throw new UnauthorizedException('No tenés permisos para eliminar esta publicación.');

@@ -20,6 +20,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
+import * as requestConUsuarioInterface from 'src/auth/request-con-usuario.interface';
 
 @Controller('publicaciones')
 @UseGuards(TokenGuard)
@@ -48,7 +49,7 @@ export class PublicacionController {
   )
   crear(
     @Body() createDto: CreatePublicacionDto,
-    @Req() req: any, // Capturamos la request para sacar al usuario inyectado por el Guard
+    @Req() req: requestConUsuarioInterface.RequestConUsuario, // Capturamos la request para sacar al usuario inyectado por el Guard
     @UploadedFile() file: Express.Multer.File,
   ) {
     const usuarioId = req.user._id; // Sacamos el ID del Token de forma segura
@@ -59,7 +60,7 @@ export class PublicacionController {
     return this.publicacionService.crear(createDto, usuarioId, imagenUrl);
   }
   @Post('/:id/like')
-  async darLike(@Param('id') id: string, @Req() req: any) {
+  async darLike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id); // Extraído del token de forma segura
     return this.publicacionService.darLike(id, usuarioId);
   }
@@ -79,14 +80,13 @@ export class PublicacionController {
     const limiteNumerico = limit ? Number(limit) : 5;
     const offsetNumerico = offset ? Number(offset) : 0;
     
-    console.log(`[BACKEND CONTROLLER] Despachando Feed -> Orden: ${sort || 'fecha'}, Limit: ${limiteNumerico}, Offset: ${offsetNumerico}`);
     return this.publicacionService.obtenerTodas(sort, limiteNumerico, offsetNumerico);
   }
 
   @Get('perfil/metricas')
   async obtenerMetricasPerfil(@Req() req: any) {
     const usuarioId = req.user._id;
-    console.log('--- SOLICITUD DE MÉTRICAS PARANORMALES ---');
+    // console.log('--- SOLICITUD DE MÉTRICAS PARANORMALES ---');
     return await this.publicacionService.obtenerMetricasPerfilUsuario(
       usuarioId,
     );

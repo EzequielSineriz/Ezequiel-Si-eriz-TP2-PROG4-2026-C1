@@ -3,6 +3,9 @@ import { Types } from "mongoose";
 
 @Schema()
 export class Usuario {
+  toObject() {
+    throw new Error('Method not implemented.');
+  }
   @Prop({ required: true })
   nombre!: string;
 

@@ -46,24 +46,29 @@ export class ComentarioService {
   }
 
   // 3. Borrado lógico de un comentario
-  async eliminar(id: string, usuarioId: string) {
-    const comentario = await this.comentarioModel.findById(id);
-    if (!comentario || comentario.eliminado) throw new NotFoundException('El comentario no existe.');
-
-    if (comentario.autorId.toString() !== usuarioId) {
-      throw new UnauthorizedException('No tenés permisos para eliminar este comentario.');
-    }
-
-    comentario.eliminado = true;
-    await comentario.save();
-
-    // Opcional: Removerlo también del array de la publicación
-    await this.publicacionModel.findByIdAndUpdate(comentario.publicacionId, {
-      $pull: { comentarios: comentario._id }
-    });
-
-    return { mensaje: 'Comentario removido con éxito.' };
+  // eliminar() y modificar() -- mismo criterio que ya tenía PublicacionService
+async eliminar(id: string, usuario: { _id: string; perfil: string }) {
+  const comentario = await this.comentarioModel.findById(id);
+  if (!comentario || comentario.eliminado) {
+    throw new NotFoundException('El comentario no existe.');
   }
+
+  const esDuenio = comentario.autorId.toString() === usuario._id.toString();
+  const esAdmin = usuario.perfil === 'admin';
+
+  if (!esDuenio && !esAdmin) {
+    throw new UnauthorizedException('No tenés permisos para eliminar este comentario.');
+  }
+
+  comentario.eliminado = true;
+  await comentario.save();
+
+  await this.publicacionModel.findByIdAndUpdate(comentario.publicacionId, {
+    $pull: { comentarios: comentario._id }
+  });
+
+  return { mensaje: 'Comentario eliminado con éxito.' };
+}
 
   // 4. Reacción de LIKE (Toggle)
   async darLike(id: string, usuarioId: string) {
@@ -122,14 +127,16 @@ export class ComentarioService {
     }
   }
 
-    async obtenerTodos() {
-    return await this.comentarioModel
-      .find({ eliminado: false })
-      .sort({ createdAt: -1 }) // Los más nuevos primero
-      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
-      .populate('publicacionId', 'contenido') // Para mostrar el contenido de la publicación asociada
-      .exec();
-  }
+  async obtenerTodos(limit = 20, offset = 0) {
+  return this.comentarioModel
+    .find({ eliminado: false })
+    .sort({ createdAt: -1 })
+    .skip(offset)
+    .limit(limit)
+    .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
+    .populate('publicacionId', 'contenido')
+    .exec();
+}
 
 
   async modificar(id: string, contenido: string, usuarioId: string) {
