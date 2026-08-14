@@ -5,24 +5,24 @@ import { Publicacion } from './publicacion.schema';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 import { Usuario } from '../usuarios/usuario.schema';
-import { NotificacionesGateway } from 'src/notificaciones/notificaciones.gateway';
+import { NotificationsGateway } from 'src/notificaciones/notificaciones.gateway';
 
 @Injectable()
 export class PublicacionService {
   constructor(
     @InjectModel(Publicacion.name) private readonly publicacionModel: Model<Publicacion>,
     @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
-    private readonly notificacionesGateway: NotificacionesGateway, // 👈 Inyectar
+    private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
   // Crear una nueva publicación
   async crear(createDto: CreatePublicacionDto, autorId: string, imagenUrl?: string): Promise<any> {
     const nuevaPublicacion = new this.publicacionModel({
       ...createDto,
-      autorId: autorId, // 🔮 Lo pasamos como string directo para que no choque con tu Schema
+      autorId: autorId,
       imagenUrl: imagenUrl || '',
     });
-    this.notificacionesGateway.notificarNuevaPublicacion(nuevaPublicacion);
+
     return await nuevaPublicacion.save();
   }
 
@@ -70,40 +70,28 @@ export class PublicacionService {
   }
 
   // Borrado lógico
-  // Borrado lógico
-async eliminar(id: string, usuario: any): Promise<any> {
-  const publicacion = await this.obtenerPorId(id);
+  async eliminar(id: string, usuario: any): Promise<any> {
+    const publicacion = await this.obtenerPorId(id);
 
-  // 1. Nos aseguramos de extraer el ID plano del autor de la publicación
-  const idDelAutorEnBD = publicacion.autorId && typeof publicacion.autorId === 'object'
-    ? (publicacion.autorId as any)._id.toString()
-    : publicacion.autorId.toString();
+    const idDelAutorEnBD = publicacion.autorId && typeof publicacion.autorId === 'object'
+      ? (publicacion.autorId as any)._id.toString()
+      : publicacion.autorId.toString();
 
-  // 2. Nos aseguramos de extraer el ID plano del usuario logueado que viene de la request
-  // A veces Mongoose inyecta un ObjectId o un objeto en req.user, forzamos a String.
-  const idDelUsuarioLogueado = usuario._id ? usuario._id.toString() : usuario.toString();
-  const perfilUsuarioLogueado = usuario.perfil || '';
+    const idDelUsuarioLogueado = usuario._id ? usuario._id.toString() : usuario.toString();
+    const perfilUsuarioLogueado = usuario.perfil || '';
 
-  // 🔮 LOG DE PURIFICACIÓN: Mira esto en la terminal de NestJS cuando tires el tacho
-  //console.log('--- DETECTANDO ENERGÍAS EN EL SERVIDOR ---');
-  //console.log('ID Autor del Post en BD:', idDelAutorEnBD);
-  //console.log('ID Usuario de la Request:', idDelUsuarioLogueado);
-  //console.log('Perfil Usuario de la Request:', perfilUsuarioLogueado);
+    const esDuenio = idDelAutorEnBD === idDelUsuarioLogueado;
+    const esAdmin = perfilUsuarioLogueado === 'admin';
 
-  const esDuenio = idDelAutorEnBD === idDelUsuarioLogueado;
-  const esAdmin = perfilUsuarioLogueado === 'admin';
+    if (!esDuenio && !esAdmin) {
+      throw new ForbiddenException('No tenés permisos para eliminar esta publicación.');
+    }
 
-  //console.log('¿Es dueño?:', esDuenio, '| ¿Es Admin?:', esAdmin);
-
-  if (!esDuenio && !esAdmin) {
-    throw new ForbiddenException('No tenés permisos para eliminar esta publicación.');
+    await this.publicacionModel.findByIdAndUpdate(id, { eliminada: true }).exec();
+    return { mensaje: 'Publicación eliminada con éxito.' };
   }
 
-  await this.publicacionModel.findByIdAndUpdate(id, { eliminada: true }).exec();
-  return { mensaje: 'Publicación eliminada con éxito.' };
-}
-
-  // 👻 DAR/QUITAR LIKE (Arreglado el error de tipo de retorno BSON)
+  // 👻 DAR/QUITAR LIKE A POST
   async darLike(publicacionId: string, usuarioId: string): Promise<any> {
     const publicacion = await this.publicacionModel.findById(publicacionId);
     if (!publicacion) throw new NotFoundException('Publicación no encontrada');
@@ -115,6 +103,16 @@ async eliminar(id: string, usuario: any): Promise<any> {
     } else {
       publicacion.usuariosQueDieronLike.push(usuarioId);
       publicacion.usuariosQueDieronDislike = publicacion.usuariosQueDieronDislike.filter(id => id !== usuarioId);
+
+      // 🔔 NOTIFICAR AL AUTOR DEL POST SÓLO CUANDO LE DAN LIKE (y no cuando se quita el like)
+      const autorPostId = publicacion.autorId.toString();
+      if (autorPostId !== usuarioId) {
+        this.notificationsGateway.notificarUsuario(autorPostId, {
+          mensaje: `A un investigador le gustó tu publicación`,
+          publicacionId,
+          fecha: new Date(),
+        });
+      }
     }
 
     publicacion.likes = publicacion.usuariosQueDieronLike.length;
@@ -126,7 +124,7 @@ async eliminar(id: string, usuario: any): Promise<any> {
     });
   }
 
-  // 🛸 DAR/QUITAR DISLIKE (Arreglado el error de tipo de retorno BSON)
+  // 🛸 DAR/QUITAR DISLIKE A POST
   async darDislike(publicacionId: string, usuarioId: string): Promise<any> {
     const publicacion = await this.publicacionModel.findById(publicacionId);
     if (!publicacion) throw new NotFoundException('Publicación no encontrada');
@@ -149,11 +147,10 @@ async eliminar(id: string, usuario: any): Promise<any> {
     });
   }
 
-  // 📊 MÉTRICAS DEL PERFIL (Arreglado pasándole el string directo en el objeto query)
+  // 📊 MÉTRICAS DEL PERFIL
   async obtenerMetricasPerfilUsuario(usuarioId: string): Promise<any> {
-    // 1. Buscamos las últimas 3 publicaciones filtrando por string
     const ultimasPublicaciones = await this.publicacionModel
-      .find({ autorId: usuarioId, eliminada: false }) // 🔮 Cambiado a 'usuarioId' string plano
+      .find({ autorId: usuarioId, eliminada: false })
       .sort({ createdAt: -1 })
       .limit(3)
       .populate({
@@ -163,15 +160,13 @@ async eliminar(id: string, usuario: any): Promise<any> {
       })
       .exec();
 
-    // 2. Contamos cuántas publicaciones totales tiene creadas
     const totalPublicaciones = await this.publicacionModel.countDocuments({ 
-      autorId: usuarioId, // 🔮 Cambiado a 'usuarioId' string plano
+      autorId: usuarioId, 
       eliminada: false 
     });
 
-    // 3. Calculamos la suma total de Me Gustas acumulados de TODOS sus posteos
     const todosSusPosteos = await this.publicacionModel.find({ 
-      autorId: usuarioId, // 🔮 Cambiado a 'usuarioId' string plano
+      autorId: usuarioId, 
       eliminada: false 
     });
     const meGustasTotales = todosSusPosteos.reduce((acumulador, post) => acumulador + (post.likes || 0), 0);

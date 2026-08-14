@@ -4,6 +4,7 @@ import { ComentarioController } from "./comentario.controller";
 import { ComentarioService } from "./comentario.service";
 import { Module } from "@nestjs/common";
 import { Comentario, ComentarioSchema } from "./comentarios.schema";
+import { NotificacionesModule } from "src/notificaciones/notificaciones.module";
 
 @Module({
     imports: [
@@ -11,6 +12,7 @@ import { Comentario, ComentarioSchema } from "./comentarios.schema";
         {   name: Comentario.name, schema: ComentarioSchema },
         {   name: Publicacion.name, schema: PublicacionSchema }
         ]),
+        NotificacionesModule
     ],
     exports: [],
     controllers: [ComentarioController],

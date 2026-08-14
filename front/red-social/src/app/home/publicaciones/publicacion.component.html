@@ -6,85 +6,127 @@
   </a>
 
   @if (post()) {
-  <div [appPostCategoriaEstilo]="post()!.categoria"
-    class="rounded-lg bg-black/40 border shadow-xl overflow-hidden backdrop-blur-sm transition-all duration-300">
+    <!-- TARJETA DEL POST PRINCIPAL -->
+    <div [appPostCategoriaEstilo]="post()!.categoria"
+      class="rounded-lg bg-black/40 border shadow-xl overflow-hidden backdrop-blur-sm transition-all duration-300 mb-6">
 
-    <div class="p-4 pb-3">
-      <div class="flex justify-between items-center mb-4">
+      <div class="p-4 pb-3">
+        <!-- Detalle del post original (autor, contenido, likes, etc.) -->
+        <div class="flex justify-between items-center mb-4">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-full bg-black border border-emerald-500/30 flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.2)]">
+              @if (post()!.autorId && typeof post()!.autorId === 'object' && $any(post()!.autorId).avatarUrl) {
+                <img [src]="$any(post()!.autorId).avatarUrl | imagenMedia" class="w-full h-full object-cover" alt="Avatar">
+              } @else {
+                <span class="text-xs">👁️</span>
+              }
+            </div>
+            <span class="font-bold text-emerald-400 text-sm tracking-wide">
+              {{ post()!.autorId && typeof post()!.autorId === 'object' ? $any(post()!.autorId).nombreUsuario : 'Investigador' }}
+            </span>
+          </div>
 
-    <div class="flex items-center gap-2.5">
-
-      <div class="w-7 h-7 rounded-full bg-black border border-emerald-500/30 flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.2)]">
-        @if (post()!.autorId && typeof post()!.autorId === 'object' && $any(post()!.autorId).avatarUrl) {
-          <img [src]="$any(post()!.autorId).avatarUrl | imagenMedia"
-               class="w-full h-full object-cover"
-               alt="Avatar del Autor">
-        } @else {
-          <span class="text-xs">👁️</span>
-        }
-      </div>
-
-      <span class="font-bold text-emerald-400 text-sm tracking-wide">
-        {{ post()!.autorId && typeof post()!.autorId === 'object' ? $any(post()!.autorId).nombreUsuario : 'Investigador' }}
-      </span>
-    </div>
-
-        <span [class]="'text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded' +
-            (post()!.categoria === 'ovnis' ? ' bg-cyan-950/50 text-cyan-400 border border-cyan-500/20' :
-             post()!.categoria === 'mitologia' ? ' bg-amber-950/50 text-amber-400 border border-amber-500/20' :
-             post()!.categoria === 'fantasmas' ? ' bg-emerald-950/50 text-emerald-400 border border-emerald-500/20' :
-             post()!.categoria === 'general' ? ' bg-rose-950/50 text-rose-400 border border-rose-500/20' : '' )">
-          {{ post()!.categoria }}
-        </span>
-      </div>
-
-      <p class="text-base text-gray-200 mb-3 font-body leading-relaxed">
-        {{ post()!.contenido }}
-      </p>
-
-      @if (post()!.imagenUrl) {
-      <div class="rounded-lg overflow-hidden border border-white/5 bg-black/20 max-h-80 mb-3">
-        <img [src]="post()!.imagenUrl! | imagenMedia" class="w-full object-cover" alt="Evidencia" />
-      </div>
-      }
-
-      <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex justify-between items-center">
-        <div class="flex gap-6 items-center">
-          <span class="flex items-center gap-1.5">
-            <app-scary-comment-icon [size]="14"></app-scary-comment-icon>
-            <span class="font-body">{{ post()!.comentarios }}</span>
+          <span class="text-[10px] uppercase font-black tracking-widest px-2 py-0.5 rounded bg-emerald-950/50 text-emerald-400 border border-emerald-500/20">
+            {{ post()!.categoria }}
           </span>
-          <button (click)="alternarLikePost()" [class.text-rose-500]="leDioLikeAlPost()"
-            class="flex items-center gap-1.5 hover:text-rose-500 transition-colors bg-transparent border-none cursor-pointer text-xs">
-            <app-scary-heart-icon [size]="14" [active]="leDioLikeAlPost()"></app-scary-heart-icon>
-
-  <span class="font-body">{{ post()!.likes }}</span>
-          </button>
         </div>
 
-        @if ($any(post()!.autorId)?._id === usuarioLogueadoId || authService.esAdmin) {
-        <button (click)="eliminarPublicacionActual()"
-          class="text-gray-500 hover:text-red-500 transition-colors bg-transparent border-none cursor-pointer text-xs flex items-center gap-1 font-bold uppercase tracking-wider"
-          title="Eliminar evidencia">
-          <svg xmlns="http://www.w3.org/2000/svg" color="AB0A2C" width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brush-cleaning-icon lucide-brush-cleaning"><path d="m16 22-1-4"/><path d="M19 14a1 1 0 0 0 1-1v-1a2 2 0 0 0-2-2h-3a1 1 0 0 1-1-1V4a2 2 0 0 0-4 0v5a1 1 0 0 1-1 1H6a2 2 0 0 0-2 2v1a1 1 0 0 0 1 1"/><path d="M19 14H5l-1.973 6.767A1 1 0 0 0 4 22h16a1 1 0 0 0 .973-1.233z"/><path d="m8 22 1-4"/></svg> Eliminar Post
+        <p class="text-base text-gray-200 mb-3 font-body leading-relaxed">
+          {{ post()!.contenido }}
+        </p>
+
+        <div class="text-xs text-gray-500 border-t border-white/5 pt-3 flex justify-between items-center">
+          <div class="flex gap-6 items-center">
+            <span class="flex items-center gap-1.5">
+              <app-scary-comment-icon [size]="14"></app-scary-comment-icon>
+              <span class="font-body">{{ post()!.comentarios?.length || 0 }}</span>
+            </span>
+            <button (click)="alternarLikePost()" [class.text-rose-500]="leDioLikeAlPost()"
+              class="flex items-center gap-1.5 hover:text-rose-500 transition-colors bg-transparent border-none cursor-pointer text-xs">
+              <app-scary-heart-icon [size]="14" [active]="leDioLikeAlPost()"></app-scary-heart-icon>
+              <span class="font-body">{{ post()!.likes }}</span>
+            </button>
+          </div>
+
+          @if ($any(post()!.autorId)?._id === usuarioLogueadoId || authService.esAdmin) {
+            <button (click)="eliminarPublicacionActual()"
+              class="text-gray-500 hover:text-red-500 transition-colors bg-transparent border-none cursor-pointer text-xs flex items-center gap-1 font-bold uppercase tracking-wider">
+              Eliminar Post
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- INPUT PARA ESCRIBIR UN COMENTARIO -->
+      <div class="border-t border-white/10 bg-white/1 p-3 flex gap-3 items-center">
+        <input type="text" [(ngModel)]="nuevoComentarioTexto" placeholder="Postea tu respuesta..."
+          class="flex-1 bg-transparent border-none py-1 text-sm text-gray-200 focus:outline-none placeholder-gray-500"
+          (keyup.enter)="publicarComentario()" />
+
+        <button (click)="publicarComentario()" [disabled]="!nuevoComentarioTexto.trim()"
+          class="text-emerald-400 hover:text-emerald-300 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer p-1 text-lg flex items-center justify-center">
+          ➔
         </button>
-        }
       </div>
 
     </div>
 
-    <div class="border-t border-white/10 bg-white/1 p-3 flex gap-3 items-center">
-      <input type="text" [(ngModel)]="nuevoComentarioTexto" placeholder="Postea tu respuesta..."
-        class="flex-1 bg-transparent border-none py-1 text-sm text-gray-200 focus:outline-none placeholder-gray-500"
-        (keyup.enter)="publicarComentario()" />
+    <!-- ======================================================== -->
+    <!-- 🔥 HILO DE COMENTARIOS (NUEVA SECCIÓN AGREGADA) 🔥 -->
+    <!-- ======================================================== -->
+    <div class="space-y-3 mt-4">
+      <h3 class="text-xs font-mono text-emerald-500 uppercase tracking-widest mb-2">
+        Respuestas de la comunidad ({{ comentarios().length }})
+      </h3>
 
-      <button (click)="publicarComentario()" [disabled]="!nuevoComentarioTexto.trim()"
-        class="text-emerald-400 hover:text-emerald-300 disabled:text-zinc-600 disabled:cursor-not-allowed transition-colors bg-transparent border-none cursor-pointer p-1 text-lg flex items-center justify-center">
-        ➔
-      </button>
+      @for (comentario of comentarios(); track comentario._id) {
+        <div class="p-3 bg-black/60 border border-emerald-950/60 rounded-lg backdrop-blur-md flex gap-3 items-start hover:border-emerald-900/50 transition-colors">
+
+          <!-- Avatar del Autor del Comentario -->
+          <div class="w-6 h-6 rounded-full bg-black border border-emerald-500/30 flex items-center justify-center overflow-hidden shrink-0">
+            @if (comentario.autorId?.avatarUrl) {
+              <img [src]="comentario.autorId.avatarUrl | imagenMedia" class="w-full h-full object-cover" alt="Avatar">
+            } @else {
+              <span class="text-[10px]">👁️</span>
+            }
+          </div>
+
+          <!-- Contenido del Comentario -->
+          <div class="flex-1 min-w-0">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-emerald-400">
+                {{ comentario.autorId?.nombreUsuario || 'Investigador' }}
+              </span>
+              <span class="text-[9px] font-mono text-gray-500">
+                {{ comentario.createdAt | date:'shortTime' }}
+              </span>
+            </div>
+
+            <p class="text-xs text-gray-300 font-body leading-relaxed mb-2">
+              {{ comentario.contenido }}
+            </p>
+
+            <!-- Acciones (Likes / Dislikes del comentario) -->
+            <div class="flex items-center gap-4 text-[10px] text-gray-500">
+              <button (click)="likeComentario(comentario._id)"
+                      class="hover:text-rose-400 flex items-center gap-1 bg-transparent border-none cursor-pointer">
+                👍 {{ comentario.likes || 0 }}
+              </button>
+
+              <button (click)="dislikeComentario(comentario._id)"
+                      class="hover:text-cyan-400 flex items-center gap-1 bg-transparent border-none cursor-pointer">
+                👎
+              </button>
+            </div>
+          </div>
+
+        </div>
+      } @empty {
+        <div class="p-4 text-center border border-dashed border-gray-800 rounded-lg text-xs font-mono text-gray-600">
+          Sin respuestas en la señal... Sé el primero en responder.
+        </div>
+      }
     </div>
-
-  </div>
 
   }
 </div>
