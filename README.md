@@ -155,7 +155,7 @@ Se abrirá automáticamente el navegador con la aplicación en ejecución.
 5. 🐳 Dockerización del Entorno (Dockerfile + docker-compose): Empaquetamiento de la aplicación backend en contenedores Docker y orquestación con un archivo docker-compose.yml que levante de manera coordinada el entorno Node.js y un contenedor oficial de MongoDB para despliegues plug & play.
 
 
-## Licencia
+## 📝 Licencia
 Este proyecto fue desarrollado bajo fines académicos exclusivamente para la materia Programación IV. Quedan reservados todos los derechos de propiedad intelectual sobre el lore e interfaces de la aplicación.
 
 

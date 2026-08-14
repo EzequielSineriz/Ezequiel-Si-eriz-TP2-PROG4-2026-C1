@@ -5,12 +5,14 @@ import { Publicacion } from './publicacion.schema';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 import { Usuario } from '../usuarios/usuario.schema';
+import { NotificacionesGateway } from 'src/notificaciones/notificaciones.gateway';
 
 @Injectable()
 export class PublicacionService {
   constructor(
     @InjectModel(Publicacion.name) private readonly publicacionModel: Model<Publicacion>,
     @InjectModel(Usuario.name) private readonly usuarioModel: Model<Usuario>,
+    private readonly notificacionesGateway: NotificacionesGateway, // 👈 Inyectar
   ) {}
 
   // Crear una nueva publicación
@@ -20,6 +22,7 @@ export class PublicacionService {
       autorId: autorId, // 🔮 Lo pasamos como string directo para que no choque con tu Schema
       imagenUrl: imagenUrl || '',
     });
+    this.notificacionesGateway.notificarNuevaPublicacion(nuevaPublicacion);
     return await nuevaPublicacion.save();
   }
 

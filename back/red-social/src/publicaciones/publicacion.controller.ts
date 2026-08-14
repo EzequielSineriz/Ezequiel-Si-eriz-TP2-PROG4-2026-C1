@@ -21,6 +21,7 @@ import { extname } from 'path';
 import { CreatePublicacionDto } from './dto/create-publicacion.dto';
 import { UpdatePublicacionDto } from './dto/update-publicacion.dto';
 import * as requestConUsuarioInterface from 'src/auth/request-con-usuario.interface';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 
 @Controller('publicaciones')
 @UseGuards(TokenGuard)
@@ -108,6 +109,12 @@ export class PublicacionController {
   }
 
   @Delete('/:id')
+  @ApiBearerAuth('JWT-auth') // Indica que este endpoint requiere token Bearer
+  @ApiOperation({ summary: 'Eliminar una publicación (Baja lógica)' })
+  @ApiResponse({ status: 200, description: 'Publicación eliminada con éxito.' })
+  @ApiResponse({ status: 401, description: 'No autenticado.' })
+  @ApiResponse({ status: 403, description: 'No tenés permisos para eliminar esta publicación.' })
+  @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   eliminar(@Param('id') id: string, @Req() req: any) {
     const usuario= req.user;
     return this.publicacionService.eliminar(id, usuario);
