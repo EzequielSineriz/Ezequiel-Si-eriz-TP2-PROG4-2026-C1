@@ -16,6 +16,7 @@ export class CreatePublicacionDto {
   @ApiProperty({
     example: 'fantasmas',
     description: 'Categoría de la publicación',
+    enum: ['fantasmas', 'ovnis', 'mitologia', 'general'],
     required: true,
   })
   @IsNotEmpty({ message: 'La categoría es requerida.' })
@@ -29,10 +30,14 @@ export class CreatePublicacionDto {
     example: ['misterio', 'paranormal'],
     description: 'Etiquetas asociadas a la publicación',
     required: false,
+    type: [String],
   })
   @IsOptional()
   @IsArray({ message: 'Las etiquetas deben ser una lista de textos.' })
   @IsString({ each: true })
   etiquetas?: string[];
+
+  @ApiProperty({ type: 'string', format: 'binary', description: 'Imagen de la publicación', required: false })
+  imagen?: any;
   
 }
