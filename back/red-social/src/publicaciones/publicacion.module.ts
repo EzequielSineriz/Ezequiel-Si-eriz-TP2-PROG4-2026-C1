@@ -14,7 +14,7 @@ import { UsuarioSchema, Usuario } from 'src/usuarios/usuario.schema';
       { name: Usuario.name, schema: UsuarioSchema }, // 👈 ¡DEBE FIGURAR ACÁ SÍ O SÍ!
     ]),
   ],
-    exports: [],
+    exports: [PublicacionService],
     controllers: [PublicacionController],
     providers: [PublicacionService],
 })

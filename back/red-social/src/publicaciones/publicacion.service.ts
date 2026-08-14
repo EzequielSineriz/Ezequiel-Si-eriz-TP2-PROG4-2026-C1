@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException, InternalServerErrorException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException, NotFoundException, UnauthorizedException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Publicacion } from './publicacion.schema';
@@ -58,7 +58,7 @@ export class PublicacionService {
     const publicacion = await this.obtenerPorId(id);
 
     if (publicacion.autorId.toString() !== usuarioId) {
-      throw new UnauthorizedException('No tenés permisos para editar esta publicación.');
+      throw new ForbiddenException('No tenés permisos para editar esta publicación.');
     }
 
     return await this.publicacionModel
@@ -93,7 +93,7 @@ async eliminar(id: string, usuario: any): Promise<any> {
   //console.log('¿Es dueño?:', esDuenio, '| ¿Es Admin?:', esAdmin);
 
   if (!esDuenio && !esAdmin) {
-    throw new UnauthorizedException('No tenés permisos para eliminar esta publicación.');
+    throw new ForbiddenException('No tenés permisos para eliminar esta publicación.');
   }
 
   await this.publicacionModel.findByIdAndUpdate(id, { eliminada: true }).exec();

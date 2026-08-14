@@ -10,22 +10,39 @@ import { PublicacionModule } from './publicaciones/publicacion.module';
 import { ComentarioModule } from './comentarios/comentario.module';
 import { EstadisticasModule } from './stats/estadisticas.module';
 import { ConfigModule } from '@nestjs/config';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRoot(process.env.MONGO_URI!),
+    // 🛡️ Límite: Máximo 60 peticiones por minuto por IP
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 60,
+    }]),
+
+
+
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'),
       serveRoot: '/uploads', // Ruta pública de la API
     }),
+    
     UsuarioModule,
     AuthModule,
     PublicacionModule,
     ComentarioModule,
-    UsuarioModule,
     EstadisticasModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // Aplica el rate limiting globalmente
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule {
+  
+}
