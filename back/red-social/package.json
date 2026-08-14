@@ -25,7 +25,7 @@
     "@nestjs/core": "^11.1.24",
     "@nestjs/mapped-types": "^2.1.1",
     "@nestjs/mongoose": "^11.0.4",
-    "@nestjs/platform-express": "^11.1.24",
+    "@nestjs/platform-express": "^11.1.28",
     "@nestjs/serve-static": "^5.0.5",
     "@nestjs/throttler": "^6.5.0",
     "@types/multer": "^2.1.0",
@@ -37,7 +37,7 @@
     "install": "^0.13.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.6.2",
-    "multer": "^2.1.1",
+    "multer": "^2.2.0",
     "npm": "^11.15.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2"
