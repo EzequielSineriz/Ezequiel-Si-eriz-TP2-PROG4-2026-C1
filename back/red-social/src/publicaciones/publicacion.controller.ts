@@ -73,7 +73,7 @@ export class PublicacionController {
   @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   async darLike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id); // Extraído del token de forma segura
-    return this.publicacionService.darLike(id, usuarioId);
+    return await this.publicacionService.darLike(id, usuarioId);
   }
 
   @Post('/:id/dislike')
@@ -82,7 +82,7 @@ export class PublicacionController {
   @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   async darDislike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = String(req.user._id); // Extraído del token de forma segura
-    return this.publicacionService.darDislike(id, usuarioId);
+    return await this.publicacionService.darDislike(id, usuarioId);
   }
 
   @Get()

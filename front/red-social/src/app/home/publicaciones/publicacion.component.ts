@@ -194,6 +194,8 @@ eliminarPublicacionActual() {
     });
   }
 
+
+
   publicarComentario() {
     if (!this.nuevoComentarioTexto.trim() || !this.post()) return;
 
