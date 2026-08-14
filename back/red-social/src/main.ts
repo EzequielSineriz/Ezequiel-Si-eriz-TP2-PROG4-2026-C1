@@ -20,7 +20,6 @@ async function bootstrap() {
       'http://localhost:8080',
       'http://localhost:4200', 
       'https://red-social-front-swart.vercel.app',
-      'https://ezequiel-si-eriz-tp2-prog4-2026-c1.onrender.com'
 
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
