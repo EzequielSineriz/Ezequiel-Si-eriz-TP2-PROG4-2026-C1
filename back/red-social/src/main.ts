@@ -5,7 +5,9 @@ import  coockieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+    console.log('URI actual:', process.env.MONGO_URI);
+
+   const app = await NestFactory.create(AppModule);
 
     app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }),
@@ -18,11 +20,14 @@ async function bootstrap() {
       'http://localhost:8080',
       'http://localhost:4200', 
       'https://red-social-front-swart.vercel.app',
+      'https://ezequiel-si-eriz-tp2-prog4-2026-c1.onrender.com'
 
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     credentials: true,
   });
+
+
   // 📄 CONFIGURACIÓN DE SWAGGER (OPENAPI)
   const config = new DocumentBuilder()
     .setTitle('Paranormal Social Network API 🛸💀')
