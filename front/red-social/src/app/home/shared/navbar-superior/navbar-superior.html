@@ -30,9 +30,9 @@
         </svg>
 
         <!-- Contador (Badge Neón) -->
-        @if (notificacionesNoLeidas > 0) {
+        @if (notificacionesNoLeidas() > 0) {
           <span class="absolute -top-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-500 text-[8px] font-mono font-bold text-black animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.9)]">
-            {{ notificacionesNoLeidas > 9 ? '9+' : notificacionesNoLeidas }}
+            {{ notificacionesNoLeidas() > 9 ? '9+' : notificacionesNoLeidas() }}
           </span>
         }
       </button>
@@ -43,7 +43,7 @@
 
           <div class="px-3 py-2 border-b border-emerald-950 flex justify-between items-center bg-emerald-950/20">
             <span class="text-[10px] font-mono text-emerald-400 tracking-wider uppercase font-semibold">Anomalías Detectadas</span>
-            @if (notificaciones.length > 0) {
+            @if (notificaciones().length > 0) {
               <button (click)="limpiarNotificaciones()" class="text-[8px] font-mono text-gray-500 hover:text-red-400 uppercase transition-colors">
                 Limpiar
               </button>
@@ -52,7 +52,7 @@
 
           <!-- Lista de Notificaciones -->
           <div class="max-h-60 overflow-y-auto divide-y divide-emerald-950/40">
-            @for (notif of notificaciones; track $index) {
+            @for (notif of notificaciones(); track $index) {
               <div class="p-2.5 hover:bg-emerald-950/30 transition-colors cursor-pointer flex flex-col gap-0.5">
                 <p class="text-[10px] font-mono text-gray-300 leading-tight">
                   {{ notif.mensaje || 'Se ha registrado interacción en tu perfil' }}

@@ -1,10 +1,11 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
 import { RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WebSocketService } from '../../../notifications/web-sockets-service';
 import { DatePipe } from '@angular/common';
+
 @Component({
   selector: 'app-navbar-superior',
   imports: [ImagenMediaPipe, RouterLink, DatePipe],
@@ -15,43 +16,44 @@ export class NavbarSuperior implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private notifSub!: Subscription;
 
-  notificaciones: any[] = [];
+  notificaciones = signal<any[]>([]);           // 👈 antes: notificaciones: any[] = [];
+  notificacionesNoLeidas = signal<number>(0);    // 👈 antes: notificacionesNoLeidas: number = 0;
   mostrarDropdown: boolean = false;
-  notificacionesNoLeidas: number = 0;
 
-  constructor(private wsService: WebSocketService) {}
+  private usuarioUnidoALaSala: string | null = null; // evita unirse dos veces al mismo usuario
+
+  constructor(private wsService: WebSocketService) {
+    // Reacciona cada vez que el signal cambia: al loguearte, al recargar con
+    // sesión ya iniciada, o al hacer logout (usuario pasa a null).
+    effect(() => {
+      const usuario = this.authService.usuarioActual();
+      if (usuario?._id && this.usuarioUnidoALaSala !== usuario._id) {
+        this.wsService.unirseASalaPrivada(usuario._id);
+        this.usuarioUnidoALaSala = usuario._id;
+      }
+    });
+  }
 
   ngOnInit(): void {
-    const miUsuario = JSON.parse(localStorage.getItem('usuario') || '{}');
-    if (miUsuario._id) {
-      this.wsService.unirseASalaPrivada(miUsuario._id);
-    }
-
     this.notifSub = this.wsService.onNuevaNotificacion().subscribe({
       next: (data) => {
-        console.log('🔔 ¡Nueva notificación recibida!:', data);
-
-        // Asignar fecha actual si no viene del backend
         const notif = { ...data, fecha: data.fecha || new Date() };
-
-        this.notificaciones.unshift(notif);
-        this.notificacionesNoLeidas++;
+        this.notificaciones.update(actuales => [notif, ...actuales]); // 👈 .update() en vez de .unshift()
+        this.notificacionesNoLeidas.update(n => n + 1);
       }
     });
   }
 
   toggleDropdownNotificaciones(): void {
     this.mostrarDropdown = !this.mostrarDropdown;
-
-    // Al abrir la campana marcamos todas como leídas (reseteamos el contador)
     if (this.mostrarDropdown) {
-      this.notificacionesNoLeidas = 0;
+      this.notificacionesNoLeidas.update(n => 0);
     }
   }
 
   limpiarNotificaciones(): void {
-    this.notificaciones = [];
-    this.notificacionesNoLeidas = 0;
+    this.notificaciones.set([]);
+    this.notificacionesNoLeidas.update(n => 0);
   }
 
   ngOnDestroy(): void {

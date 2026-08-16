@@ -14,6 +14,7 @@ export class ComentarioService {
     private readonly notificationsGateway: NotificationsGateway,
   ) {}
 
+
   // 1. Crear un comentario
   async crear(createDto: CreateComentarioDto, autorId: string) {
     const { publicacionId, contenido } = createDto;
@@ -38,20 +39,21 @@ export class ComentarioService {
       });
     }
 
-    await this.publicacionModel.findByIdAndUpdate(publicacionId, {
-      $push: { comentarios: comentarioGuardado._id }
-    });
+    // 🔄 Obtener la publicación actualizada con sus populates
+    const publicacionActualizada = await this.publicacionModel.findByIdAndUpdate(
+      publicacionId,
+      { $push: { comentarios: comentarioGuardado._id } },
+      { new: true }
+    )
+    .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
+    .populate('comentarios');
 
-    return await comentarioGuardado.populate('autorId', 'nombre apellido nombreUsuario avatarUrl');
-  }
+    const comentarioPoblado = await comentarioGuardado.populate('autorId', 'nombre apellido nombreUsuario avatarUrl');
 
-  // 2. Obtener comentarios de una publicación
-  async obtenerPorPublicacion(publicacionId: string) {
-    return await this.comentarioModel
-      .find({ publicacionId, eliminado: false })
-      .sort({ createdAt: 1 })
-      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
-      .exec();
+    return {
+      comentario: comentarioPoblado,
+      publicacionActualizada,
+    };
   }
 
   // 3. Borrado lógico
@@ -71,12 +73,33 @@ export class ComentarioService {
     comentario.eliminado = true;
     await comentario.save();
 
-    await this.publicacionModel.findByIdAndUpdate(comentario.publicacionId, {
-      $pull: { comentarios: comentario._id }
-    });
+    // 🔄 Obtener la publicación actualizada al remover el comentario
+    const publicacionActualizada = await this.publicacionModel.findByIdAndUpdate(
+      comentario.publicacionId,
+      { $pull: { comentarios: comentario._id } },
+      { new: true }
+    )
+    .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
+    .populate('comentarios');
 
-    return { mensaje: 'Comentario eliminado con éxito.' };
+    return { 
+      mensaje: 'Comentario eliminado con éxito.',
+      publicacionActualizada,
+    };
   }
+  
+
+  // 2. Obtener comentarios de una publicación
+  async obtenerPorPublicacion(publicacionId: string) {
+    return await this.comentarioModel
+      .find({ publicacionId, eliminado: false })
+      .sort({ createdAt: 1 })
+      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
+      .exec();
+  }
+
+  // 3. Borrado lógico
+ 
 
   // 4. Reacción de LIKE a Comentario
   async darLike(id: string, usuarioId: string) {

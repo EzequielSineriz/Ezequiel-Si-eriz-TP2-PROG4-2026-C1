@@ -1,9 +1,11 @@
-import { Component, inject, OnInit, signal, OnDestroy, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, inject, OnInit, signal, OnDestroy, ViewChild, ElementRef } from '@angular/core';
 import { PostBox } from "../post-box/post-box";
 import { PostCard } from "../post-card/post-card";
 import { IPublicacion } from '../../publicaciones/interfaces/publicaciones.interface';
 import { PublicacionesService } from '../../publicaciones/service/publicaciones.service';
 import { ScaryEvidenceIconComponent } from '../../../utils/icons/scary_evidence';
+import { WebSocketService } from '../../../notifications/web-sockets-service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-feed',
@@ -13,11 +15,13 @@ import { ScaryEvidenceIconComponent } from '../../../utils/icons/scary_evidence'
 })
 export class Feed implements OnInit, OnDestroy {
   private pubService = inject(PublicacionesService);
-  public usuarioLogueadoId: string = '';
+  private wsService = inject(WebSocketService);
 
+  public usuarioLogueadoId: string = '';
   public postsArray = signal<IPublicacion[]>([]);
   public criterioOrden: 'fecha' | 'likes' = 'fecha';
 
+  private wsSubs: Subscription[] = [];
 
   // Paginación y control de carga
   public limite: number = 5;
@@ -31,12 +35,10 @@ export class Feed implements OnInit, OnDestroy {
 
   @ViewChild('anclaReal') set mapearAncla(referencia: ElementRef | undefined) {
     if (referencia && this.observador) {
-      this.observador.disconnect(); // Limpiamos rastros previos
-      this.observador.observe(referencia.nativeElement); // Lo ponemos a escuchar
+      this.observador.disconnect();
+      this.observador.observe(referencia.nativeElement);
     }
   }
-
-
 
   ngOnInit(): void {
     const userJson = localStorage.getItem('paranormal_user');
@@ -46,16 +48,31 @@ export class Feed implements OnInit, OnDestroy {
 
     this.cargarPublicaciones();
     this.crearInfiniteScroll();
+
+    // 📡 Única suscripción para creación, likes y ediciones globales
+    this.wsSubs.push(
+      this.wsService.onPublicacionActualizada().subscribe((postRecibido: IPublicacion) => {
+        this.postsArray.update(posts => {
+          const index = posts.findIndex(p => p._id === postRecibido._id);
+
+          if (index !== -1) {
+            // 🔄 Si ya existe en la lista (Like / Dislike / Edición), lo actualizamos
+            return posts.map(p => p._id === postRecibido._id ? postRecibido : p);
+          } else {
+            // ➕ Si NO existe (Post nuevo de otro usuario o propio), lo agregamos arriba de todo
+            return [postRecibido, ...posts];
+          }
+        });
+      })
+    );
   }
 
   ngOnDestroy(): void {
     if (this.observador) {
       this.observador.disconnect();
     }
-
+    this.wsSubs.forEach(sub => sub.unsubscribe());
   }
-
-
 
   cargarPublicaciones(append: boolean = false) {
     if (this.cargando) return;
@@ -70,7 +87,6 @@ export class Feed implements OnInit, OnDestroy {
 
           if (append) {
             this.postsArray.update(posts => {
-              // 🛡️ Filtro de seguridad anti-duplicados para evitar crash NG0955
               const idsExistentes = new Set(posts.map(p => p._id));
               const filtrados = nuevosPosts.filter(p => !idsExistentes.has(p._id));
               return [...posts, ...filtrados];
@@ -97,28 +113,18 @@ export class Feed implements OnInit, OnDestroy {
 
   crearInfiniteScroll() {
     this.observador = new IntersectionObserver((entries) => {
-      // Si el ancla entra en pantalla, no es el fin de los registros, y no estamos cargando ya una consulta...
       if (entries[0].isIntersecting && !this.finDeRegistros && !this.cargando && this.postsArray().length > 0) {
-        console.log('[INFINITE SCROLL] Cargando más publicaciones... Offset actual:', this.offset + this.limite);
         this.offset += this.limite;
         this.cargarPublicaciones(true);
       }
-    }, { rootMargin: '150px' }); // Pide datos 150px antes de llegar al límite visual
+    }, { rootMargin: '150px' });
   }
-
 
   agregarNuevoPost(formData: FormData) {
     this.pubService.crearPublicacion(formData).subscribe({
-      next: (postCreado) => {
-        const datosUsuario = localStorage.getItem('paranormal_user');
-        if (datosUsuario) {
-          const usuario = JSON.parse(datosUsuario);
-          postCreado.autorId = {
-            ...usuario,
-            _id: usuario._id || this.usuarioLogueadoId,
-          };
-        }
-        this.postsArray.update(posts => [postCreado, ...posts]);
+      next: () => {
+        // 🛑 No modificamos 'postsArray' manualmente aquí.
+        // El backend emitirá 'publicacionActualizada' vía WebSocket y el listener de ngOnInit lo insertará en tiempo real.
       },
       error: (err) => console.error('Error al archivar la evidencia:', err)
     });
@@ -133,9 +139,6 @@ export class Feed implements OnInit, OnDestroy {
 
   onToggleLike(post: IPublicacion) {
     this.pubService.darLike(post._id).subscribe({
-      next: (postActualizado) => {
-        this.postsArray.update(posts => posts.map(p => p._id === postActualizado._id ? postActualizado : p));
-      },
       error: (err) => console.error('Error al tramitar me gusta:', err)
     });
   }

@@ -23,10 +23,21 @@ export class PublicacionService {
       imagenUrl: imagenUrl || '',
     });
 
-    return await nuevaPublicacion.save();
+    const guardado = await nuevaPublicacion.save();
+
+    // Populamos el autor para tener nombre, avatar, etc.
+    const publicacionPopulada = await this.publicacionModel
+    .findById(guardado._id)
+    .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
+    .exec();
+
+  // 📡 Emitimos la publicación completa a todos los clientes
+  this.notificationsGateway.emitirPublicacionActualizada(publicacionPopulada);
+
+  return publicacionPopulada;
   }
 
-  // Traer todas las publicaciones (Para el Feed)
+  // Traer todas las publicaciones
   async obtenerTodas(sort: string = 'fecha', limit: number = 5, offset: number = 0): Promise<any> {
     const orden = sort === 'likes' ? { likes: -1 } : { createdAt: -1 };
 
@@ -60,13 +71,19 @@ export class PublicacionService {
   async actualizar(id: string, updateDto: UpdatePublicacionDto, usuarioId: string): Promise<any> {
     const publicacion = await this.obtenerPorId(id);
 
-    if (publicacion.autorId.toString() !== usuarioId) {
+    if (publicacion.autorId._id.toString() !== usuarioId && publicacion.autorId.toString() !== usuarioId) {
       throw new ForbiddenException('No tenés permisos para editar esta publicación.');
     }
 
-    return await this.publicacionModel
-      .findByIdAndUpdate(id, { $set: updateDto }, { new: true })
+    const postActualizado = await this.publicacionModel
+      .findByIdAndUpdate(id, { $set: updateDto }, { returnDocument: 'after' })
+      .populate('autorId', 'nombre apellido nombreUsuario avatarUrl')
       .exec();
+
+    // 📡 Emitir a todos el post editado
+    this.notificationsGateway.emitirPublicacionActualizada(postActualizado);
+
+    return postActualizado;
   }
 
   // Borrado lógico
@@ -104,7 +121,7 @@ export class PublicacionService {
       publicacion.usuariosQueDieronLike.push(usuarioId);
       publicacion.usuariosQueDieronDislike = publicacion.usuariosQueDieronDislike.filter(id => id !== usuarioId);
 
-      // 🔔 NOTIFICAR AL AUTOR DEL POST SÓLO CUANDO LE DAN LIKE (y no cuando se quita el like)
+      // 🔔 NOTIFICAR AL AUTOR DEL POST SÓLO CUANDO LE DAN LIKE
       const autorPostId = publicacion.autorId.toString();
       if (autorPostId !== usuarioId) {
         this.notificationsGateway.notificarUsuario(autorPostId, {
@@ -118,10 +135,15 @@ export class PublicacionService {
     publicacion.likes = publicacion.usuariosQueDieronLike.length;
 
     const guardado = await publicacion.save();
-    return await guardado.populate({
+    const postPopulada = await guardado.populate({
       path: 'autorId',
       select: 'nombre apellido nombreUsuario avatarUrl'
     });
+
+    // 📡 Emitir a todos el post actualizado
+    this.notificationsGateway.emitirPublicacionActualizada(postPopulada);
+
+    return postPopulada;
   }
 
   // 🛸 DAR/QUITAR DISLIKE A POST
@@ -141,10 +163,15 @@ export class PublicacionService {
     publicacion.likes = publicacion.usuariosQueDieronLike.length;
 
     const guardado = await publicacion.save();
-    return await guardado.populate({
+    const postPopulada = await guardado.populate({
       path: 'autorId',
       select: 'nombre apellido nombreUsuario avatarUrl'
     });
+
+    // 📡 Emitir a todos el post actualizado
+    this.notificationsGateway.emitirPublicacionActualizada(postPopulada);
+
+    return postPopulada;
   }
 
   // 📊 MÉTRICAS DEL PERFIL

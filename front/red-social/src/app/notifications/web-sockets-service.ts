@@ -10,9 +10,8 @@ export class WebSocketService {
   private socket: Socket;
 
   constructor() {
-    const token = localStorage.getItem('paranormal_token'); // Recuperamos el JWT
+    const token = localStorage.getItem('paranormal_token');
 
-    // Conectamos pasando el token en el handshake de Socket.IO
     this.socket = io(environment.apiUrl, {
       auth: {
         token: token ? `Bearer ${token}` : '',
@@ -29,41 +28,38 @@ export class WebSocketService {
     });
   }
 
-  // 1. Unirse a la sala privada del usuario (si tu backend lo requiere manualmente)
+  // 1. Unirse a la sala privada del usuario
   unirseASalaPrivada(usuarioId: string): void {
     if (usuarioId) {
       this.socket.emit('unirseASala', usuarioId);
     }
   }
 
-  // 2. Escuchar Notificaciones en Tiempo Real (Likes, Comentarios, etc.)
+  // 2. Escuchar Notificaciones Privadas (Campanita de Likes, Menciones, etc.)
   onNuevaNotificacion(): Observable<any> {
     return new Observable((observer) => {
       const handler = (data: any) => observer.next(data);
-
       this.socket.on('nuevaNotificacion', handler);
 
-      // Limpieza cuando el componente se destruye / se desuscribe
       return () => {
         this.socket.off('nuevaNotificacion', handler);
       };
     });
   }
 
-  // 3. Escuchar cuando alguien crea una publicación en el feed global
-  onNuevaPublicacion(): Observable<any> {
+  // 3. Escuchar Eventos Globales de Publicaciones (Nuevas, Likes y Ediciones)
+  onPublicacionActualizada(): Observable<any> {
     return new Observable((observer) => {
       const handler = (data: any) => observer.next(data);
-
-      this.socket.on('nuevaPublicacion', handler);
+      this.socket.on('publicacionActualizada', handler);
 
       return () => {
-        this.socket.off('nuevaPublicacion', handler);
+        this.socket.off('publicacionActualizada', handler);
       };
     });
   }
 
-  // 4. Método utilitario para desconectar si hace Logout
+  // 4. Desconectar al cerrar sesión
   desconectar(): void {
     if (this.socket) {
       this.socket.disconnect();

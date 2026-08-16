@@ -28,6 +28,7 @@ import { ApiBearerAuth, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '
 @Controller('publicaciones')
 @UseGuards(TokenGuard)
 export class PublicacionController {
+
   constructor(private readonly publicacionService: PublicacionService) {}
 
   @Post()
@@ -35,44 +36,41 @@ export class PublicacionController {
   @ApiConsumes('multipart/form-data')
   @ApiResponse({ status: 201, description: 'Publicación creada.' })
   @UseInterceptors(
-  FileInterceptor('imagen', {
-    storage: diskStorage({
-      destination: './uploads/publicaciones',
-      filename: (req, file, callback) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        const ext = extname(file.originalname);
-        callback(null, `post-${uniqueSuffix}${ext}`);
+    FileInterceptor('imagen', {
+      storage: diskStorage({
+        destination: './uploads/publicaciones',
+        filename: (req, file, callback) => {
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          const ext = extname(file.originalname);
+          callback(null, `post-${uniqueSuffix}${ext}`);
+        },
+      }),
+      fileFilter: (req, file, callback) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+          return callback(new BadRequestException('Solo se permiten imágenes (jpg, png, webp)'), false);
+        }
+        callback(null, true);
       },
-     }),
-     fileFilter: (req, file, callback) => {          // 👈 nuevo
-      if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
-        return callback(new BadRequestException('Solo se permiten imágenes (jpg, png, webp)'), false);
-      }
-      callback(null, true);
-     },
-     limits: { fileSize: 5 * 1024 * 1024 },          // 👈 nuevo, 5MB
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   crear(
     @Body() createDto: CreatePublicacionDto,
-    @Req() req: requestConUsuarioInterface.RequestConUsuario, // Capturamos la request para sacar al usuario inyectado por el Guard
+    @Req() req: requestConUsuarioInterface.RequestConUsuario,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    const usuarioId = req.user._id; // Sacamos el ID del Token de forma segura
-    const imagenUrl = file
-      ? `/uploads/publicaciones/${file.filename}`
-      : undefined;
+    const usuarioId = req.user._id;
+    const imagenUrl = file ? `/uploads/publicaciones/${file.filename}` : undefined;
 
     return this.publicacionService.crear(createDto, usuarioId, imagenUrl);
   }
-
 
   @Post('/:id/like')
   @ApiOperation({ summary: 'Dar/quitar like a una publicación' })
   @ApiResponse({ status: 200, description: 'Publicación actualizada con el like.' })
   @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   async darLike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
-    const usuarioId = String(req.user._id); // Extraído del token de forma segura
+    const usuarioId = String(req.user._id);
     return await this.publicacionService.darLike(id, usuarioId);
   }
 
@@ -81,7 +79,7 @@ export class PublicacionController {
   @ApiResponse({ status: 200, description: 'Publicación actualizada con el dislike.' })
   @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   async darDislike(@Param('id') id: string, @Req() req: requestConUsuarioInterface.RequestConUsuario) {
-    const usuarioId = String(req.user._id); // Extraído del token de forma segura
+    const usuarioId = String(req.user._id);
     return await this.publicacionService.darDislike(id, usuarioId);
   }
 
@@ -91,11 +89,11 @@ export class PublicacionController {
   obtenerTodas(
     @Query('sort') sort?: string,
     @Query('limit') limit?: string,
-    @Query('offset') offset?: string,) {
-
+    @Query('offset') offset?: string,
+  ) {
     const limiteNumerico = limit ? Number(limit) : 5;
     const offsetNumerico = offset ? Number(offset) : 0;
-    
+
     return this.publicacionService.obtenerTodas(sort, limiteNumerico, offsetNumerico);
   }
 
@@ -104,10 +102,7 @@ export class PublicacionController {
   @ApiResponse({ status: 200, description: 'Métricas del usuario logueado.' })
   async obtenerMetricasPerfil(@Req() req: requestConUsuarioInterface.RequestConUsuario) {
     const usuarioId = req.user._id;
-    // console.log('--- SOLICITUD DE MÉTRICAS PARANORMALES ---');
-    return await this.publicacionService.obtenerMetricasPerfilUsuario(
-      usuarioId,
-    );
+    return await this.publicacionService.obtenerMetricasPerfilUsuario(usuarioId);
   }
 
   @Get('/:id')
@@ -133,14 +128,14 @@ export class PublicacionController {
   }
 
   @Delete('/:id')
-  @ApiBearerAuth('JWT-auth') // Indica que este endpoint requiere token Bearer
+  @ApiBearerAuth('JWT-auth')
   @ApiOperation({ summary: 'Eliminar una publicación (Baja lógica)' })
   @ApiResponse({ status: 200, description: 'Publicación eliminada con éxito.' })
   @ApiResponse({ status: 401, description: 'No autenticado.' })
   @ApiResponse({ status: 403, description: 'No tenés permisos para eliminar esta publicación.' })
   @ApiResponse({ status: 404, description: 'Publicación no encontrada.' })
   eliminar(@Param('id') id: string, @Req() req: any) {
-    const usuario= req.user;
+    const usuario = req.user;
     return this.publicacionService.eliminar(id, usuario);
   }
 }

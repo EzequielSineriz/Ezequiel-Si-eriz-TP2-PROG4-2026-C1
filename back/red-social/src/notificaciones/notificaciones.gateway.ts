@@ -11,7 +11,7 @@ import { Server, Socket } from 'socket.io';
 
 @WebSocketGateway({
   cors: {
-    origin: '*', // O tu URL de Angular
+    origin: '*',
   },
 })
 export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisconnect {
@@ -26,20 +26,29 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
     console.log(`❌ Cliente desconectado: ${client.id}`);
   }
 
-  // 🎯 AQUÍ OCURRE LA MAGIA: El cliente le dice al server cuál es su Mongo _id
   @SubscribeMessage('unirseASala')
   handleUnirseASala(
     @MessageBody() usuarioId: string,
     @ConnectedSocket() client: Socket,
   ) {
     if (usuarioId) {
-      client.join(usuarioId); // Mete la conexión en la sala con el ID de Mongo
-      console.log(`👤 Socket ${client.id} se unió a la sala privada: ${usuarioId}`);
+      const idLimpio = String(usuarioId).trim();
+      client.join(idLimpio);
+      console.log(`👤 Socket ${client.id} se unió a la sala privada: ${idLimpio}`);
     }
   }
 
-  // Método helper para emitir directamente a un usuario
+  // Notificación privada (campana/alertas individuales)
   notificarUsuario(usuarioIdDestino: string, payload: any) {
-    this.server.to(usuarioIdDestino).emit('nuevaNotificacion', payload);
+    const idLimpio = String(usuarioIdDestino).trim();
+    const salaExiste = this.server.sockets.adapter.rooms.has(idLimpio);
+    console.log(`📤 Notificación a usuario "${idLimpio}" — ¿conectado?:`, salaExiste);
+    this.server.to(idLimpio).emit('nuevaNotificacion', payload);
+  }
+
+  // Actualización pública global (feed de publicaciones/likes/comentarios)
+  emitirPublicacionActualizada(postActualizado: any) {
+    console.log(`📡 Emitiendo 'publicacionActualizada' globalmente para el post: ${postActualizado._id}`);
+    this.server.emit('publicacionActualizada', postActualizado);
   }
 }
