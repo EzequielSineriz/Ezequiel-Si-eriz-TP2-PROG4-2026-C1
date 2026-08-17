@@ -141,7 +141,18 @@ export class PublicacionService {
     });
 
     // 📡 Emitir a todos el post actualizado
-    this.notificationsGateway.emitirPublicacionActualizada(postPopulada);
+    this.notificationsGateway.emitirPublicacionActualizada(postPopulada),{
+      _id: new Types.ObjectId().toString(),
+      mensaje: `A un investigador le gustó tu reporte`,
+      tipo: 'like', // 'like' | 'comentario' | 'seguimiento'
+      fecha: new Date(),
+      emisor: {
+      nombreUsuario:publicacion.usuariosQueDieronLike.includes(usuarioId) ? 'Un investigador' : 'Alguien',
+      avatarUrl: publicacion.imagenUrl,
+      },
+  publicacionId: publicacion._id,
+  imagenPreview: publicacion.imagenUrl
+    };
 
     return postPopulada;
   }

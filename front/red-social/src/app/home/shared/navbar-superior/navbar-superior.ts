@@ -1,20 +1,23 @@
 import { Component, effect, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ImagenMediaPipe } from '../../../utils/pipes/imagen.media.pipe';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { WebSocketService } from '../../../notifications/web-sockets-service';
 import { DatePipe } from '@angular/common';
+import { NotificationDropdown } from '../../../notifications/notification-dropdown';
+import { INotificacion } from '../../../notifications/notification.interface';
 
 @Component({
   selector: 'app-navbar-superior',
-  imports: [ImagenMediaPipe, RouterLink, DatePipe],
+  imports: [ImagenMediaPipe, RouterLink, DatePipe,NotificationDropdown],
   templateUrl: './navbar-superior.html',
   styleUrl: './navbar-superior.css',
 })
 export class NavbarSuperior implements OnInit, OnDestroy {
   public authService = inject(AuthService);
   private notifSub!: Subscription;
+  private router = inject(Router);
 
   notificaciones = signal<any[]>([]);           // 👈 antes: notificaciones: any[] = [];
   notificacionesNoLeidas = signal<number>(0);    // 👈 antes: notificacionesNoLeidas: number = 0;
@@ -54,6 +57,13 @@ export class NavbarSuperior implements OnInit, OnDestroy {
   limpiarNotificaciones(): void {
     this.notificaciones.set([]);
     this.notificacionesNoLeidas.update(n => 0);
+  }
+
+  alSeleccionarNotificacion(notif: INotificacion): void {
+    this.mostrarDropdown = false;
+    if (notif.publicacionId) {
+      this.router.navigate(['/home'], { queryParams: { post: notif.publicacionId } });
+    }
   }
 
   ngOnDestroy(): void {

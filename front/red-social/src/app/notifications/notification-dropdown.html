@@ -1,0 +1,102 @@
+<div class="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-black/95 border border-emerald-900/80 rounded-md shadow-[0_0_25px_rgba(0,0,0,0.95)] z-50 overflow-hidden backdrop-blur-md font-mono select-none">
+
+  <!-- Encabezado -->
+  <div class="px-3.5 py-2.5 border-b border-emerald-950 flex justify-between items-center bg-emerald-950/30">
+    <div class="flex items-center gap-2">
+      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+      <span class="text-[11px] text-emerald-400 tracking-wider uppercase font-semibold drop-shadow-[0_0_4px_rgba(16,185,129,0.5)]">
+        Actividad Paranormal
+      </span>
+    </div>
+    @if (notificaciones().length > 0) {
+      <button (click)="limpiar.emit()" class="text-[9px] text-gray-500 hover:text-red-400 uppercase transition-colors cursor-pointer">
+        Limpiar
+      </button>
+    }
+  </div>
+
+  <!-- Lista agrupada con scroll -->
+  <div class="max-h-96 overflow-y-auto divide-y divide-emerald-950/30 custom-scrollbar">
+
+    @if (notificaciones().length === 0) {
+      <div class="p-6 text-center text-[10px] text-gray-600 uppercase tracking-widest flex flex-col items-center gap-2">
+        <span class="text-lg opacity-40">🦇</span>
+        <span>Sin registros de actividad</span>
+      </div>
+    } @else {
+
+      <!-- SECCIÓN: HOY -->
+      @if (notificacionesAgrupadas().hoy.length > 0) {
+        <div class="px-3 py-1.5 bg-emerald-950/20 text-[9px] font-bold text-emerald-500/80 tracking-widest uppercase">
+          Hoy
+        </div>
+        @for (notif of notificacionesAgrupadas().hoy; track $index) {
+          <ng-container *ngTemplateOutlet="itemNotificacion; context: { $implicit: notif }"></ng-container>
+        }
+      }
+
+      <!-- SECCIÓN: ESTA SEMANA -->
+      @if (notificacionesAgrupadas().estaSemana.length > 0) {
+        <div class="px-3 py-1.5 bg-emerald-950/20 text-[9px] font-bold text-emerald-500/80 tracking-widest uppercase border-t border-emerald-950/50">
+          Esta semana
+        </div>
+        @for (notif of notificacionesAgrupadas().estaSemana; track $index) {
+          <ng-container *ngTemplateOutlet="itemNotificacion; context: { $implicit: notif }"></ng-container>
+        }
+      }
+
+      <!-- SECCIÓN: ANTERIORES -->
+      @if (notificacionesAgrupadas().anteriores.length > 0) {
+        <div class="px-3 py-1.5 bg-emerald-950/20 text-[9px] font-bold text-emerald-500/80 tracking-widest uppercase border-t border-emerald-950/50">
+          Anteriores
+        </div>
+        @for (notif of notificacionesAgrupadas().anteriores; track $index) {
+          <ng-container *ngTemplateOutlet="itemNotificacion; context: { $implicit: notif }"></ng-container>
+        }
+      }
+
+    }
+  </div>
+</div>
+
+<!-- PLANTILLA REUTILIZABLE DE NOTIFICACIÓN ESTILO GÓTICO/INSTAGRAM -->
+<ng-template #itemNotificacion let-notif>
+  <div (click)="seleccionarNotificacion.emit(notif)"
+       class="p-2.5 hover:bg-emerald-950/40 transition-colors cursor-pointer flex items-center justify-between gap-3 group">
+
+    <!-- Lado Izquierdo: Avatar Emisor -->
+    <div class="relative flex-shrink-0">
+      <div class="w-9 h-9 rounded-full bg-black border border-emerald-900/80 overflow-hidden group-hover:border-emerald-400 group-hover:shadow-[0_0_8px_rgba(16,185,129,0.3)] transition-all">
+        @if (notif.emisor?.avatarUrl) {
+          <img [src]="notif.emisor.avatarUrl | imagenMedia" class="w-full h-full object-cover" alt="Avatar">
+        } @else {
+          <div class="w-full h-full flex items-center justify-center text-xs">👁️</div>
+        }
+      </div>
+    </div>
+
+    <!-- Centro: Nombre de usuario + Mensaje + Tiempo -->
+    <div class="flex-1 min-w-0">
+      <p class="text-[10px] text-gray-300 leading-tight break-words">
+        <strong class="text-emerald-400 font-semibold hover:underline">
+          {{ notif.emisor?.nombreUsuario || 'Investigador' }}
+        </strong>
+        {{ notif.mensaje }}
+        <span class="text-[9px] text-emerald-600/80 ml-1">
+          {{ tiempoRelativo(notif.fecha) }}
+        </span>
+      </p>
+    </div>
+
+    <!-- Lado Derecho: Preview/Miniatura o Acción -->
+    @if (notif.imagenPreview) {
+      <div class="w-9 h-9 rounded bg-black border border-emerald-950 overflow-hidden flex-shrink-0">
+        <img [src]="notif.imagenPreview | imagenMedia" class="w-full h-full object-cover" alt="Post preview">
+      </div>
+    } @else if (notif.tipo === 'seguimiento') {
+      <button class="text-[8px] bg-emerald-950 hover:bg-emerald-800 text-emerald-300 px-2 py-1 rounded border border-emerald-700/50 uppercase transition-all">
+        Ver Perfil
+      </button>
+    }
+  </div>
+</ng-template>

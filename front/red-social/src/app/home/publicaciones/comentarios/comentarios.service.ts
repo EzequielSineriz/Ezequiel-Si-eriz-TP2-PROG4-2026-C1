@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { IComentario } from '../comentarios/comentarios.interfaces';
 import { environment } from '../../../../environments/enviroment.development';
 
@@ -18,11 +18,18 @@ export class ComentariosService {
     });
   }
 
-  crearComentario(contenido: string, publicacionId: string): Observable<IComentario> {
-    return this.http.post<IComentario>(this.apiUrl, { contenido, publicacionId }, {
-      headers: this.obtenerCabeceras()
-    });
-  }
+  crearComentario(contenido: string, publicacionId: string) {
+  return this.http.post<IComentario>(`${this.apiUrl}`, { contenido, publicacionId }).pipe(
+    map((res: any) => {
+      // Si el backend responde con { mensaje: 'Ok', comentario: { ... } }
+      const item = res.comentario || res;
+      return {
+        ...item,
+        contenido: item.contenido || item.texto || contenido
+      };
+    })
+  );
+}
 
   // Obtener todos los comentarios de un posteo específico
   obtenerPorPublicacion(pubId: string): Observable<IComentario[]> {

@@ -26,6 +26,8 @@ import { ScaryHeartIconComponent } from '../../utils/icons/corazon_icons';
     PostCategoriaEstiloDirective,
     ScaryCommentIconComponent,
     ScaryHeartIconComponent,
+    CensuraParanormalPipe, // 👈 Agregar aquí
+    EspectroComentariosPipe, // 👈 Agregar aquí
 ],
   templateUrl: './publicacion.component.html',
 })
@@ -197,25 +199,36 @@ eliminarPublicacionActual() {
 
 
   publicarComentario() {
-    if (!this.nuevoComentarioTexto.trim() || !this.post()) return;
+  if (!this.nuevoComentarioTexto.trim() || !this.post()) return;
 
-    this.comentarioService.crearComentario(this.nuevoComentarioTexto, this.post()!._id).subscribe({
-      next: (comentarioCreado) => {
-        // Seteo reactivo inmediato en el hilo usando .update() de Signals
-        this.comentarios.update(lista => [...lista, comentarioCreado]);
-        this.nuevoComentarioTexto = '';
+  const textoAInsertar = this.nuevoComentarioTexto;
 
-        // Actualizamos dinámicamente el array de IDs del posteo para reflejar el conteo
-        this.post.update(p => {
-          if (p) {
-            return { ...p, comentarios: [...p.comentarios, comentarioCreado._id] };
-          }
-          return null;
-        });
-      },
-      error: (err) => console.error('Error al sellar el comentario:', err)
-    });
-  }
+  this.comentarioService.crearComentario(textoAInsertar, this.post()!._id).subscribe({
+    next: (res: any) => {
+      // Extraemos el objeto si viene envuelto en res.comentario o res.data
+      const nuevoObj = res.comentario || res.data || res;
+
+      // Nos aseguramos de que mantenga la propiedad 'contenido' localmente
+      const comentarioNormalizado: IComentario = {
+        ...nuevoObj,
+        contenido: nuevoObj.contenido || nuevoObj.texto || nuevoObj.mensaje || textoAInsertar
+      };
+
+      // Actualización reactiva del array
+      this.comentarios.update(lista => [...lista, comentarioNormalizado]);
+      this.nuevoComentarioTexto = '';
+
+      // Actualizamos el contador/array de IDs en el post
+      this.post.update(p => {
+        if (p) {
+          return { ...p, comentarios: [...p.comentarios, comentarioNormalizado._id] };
+        }
+        return null;
+      });
+    },
+    error: (err) => console.error('Error al sellar el comentario:', err)
+  });
+}
 
   activarEdicion(coment: any) {
   this.comentarioEditandoId = coment._id;
